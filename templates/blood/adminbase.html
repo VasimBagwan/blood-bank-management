@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - Blood Bank</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.css">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;list-style:none;text-decoration:none;font-family:'Segoe UI',sans-serif}
+    html,body{background:#0d0000;color:#fff;min-height:100vh}
+
+    /* ── TOPBAR ── */
+    .topbar{width:100%;height:60px;background:rgba(8,0,0,0.99);border-bottom:1px solid rgba(200,0,20,0.3);display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem 0 220px;position:fixed;top:0;left:0;z-index:999;transition:padding .3s}
+    .brand{color:#fff;font-size:15px;font-weight:600;display:flex;align-items:center;gap:9px;text-decoration:none}
+    .brand-icon{width:30px;height:30px;background:#cc0015;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;animation:hb 1.4s ease-in-out infinite}
+    @keyframes hb{0%,100%{transform:scale(1)}14%{transform:scale(1.25)}28%{transform:scale(1)}42%{transform:scale(1.15)}}
+
+    .topbar-right{display:flex;align-items:center;gap:1.2rem}
+    .admin-pill{background:rgba(200,0,20,.18);border:1px solid rgba(200,0,20,.35);border-radius:20px;padding:.3rem .9rem;font-size:.73rem;color:#ff4455;display:flex;align-items:center;gap:.4rem;letter-spacing:.05em;text-transform:uppercase;font-weight:600}
+    .logout-btn{display:flex;align-items:center;gap:.5rem;color:rgba(255,255,255,.55);font-size:.82rem;text-decoration:none;padding:.4rem .8rem;border-radius:8px;border:1px solid rgba(200,0,20,.2);transition:all .2s}
+    .logout-btn:hover{background:rgba(200,0,20,.15);color:#ff4455;border-color:rgba(200,0,20,.45)}
+
+    /* hamburger */
+    .ham{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:4px}
+    .ham span{width:22px;height:2px;background:rgba(255,255,255,.7);border-radius:2px;transition:all .3s}
+
+    /* ── SIDEBAR ── */
+    .sidebar{width:200px;height:100vh;background:rgba(6,0,0,.99);border-right:1px solid rgba(200,0,20,.18);position:fixed;top:0;left:0;z-index:1000;display:flex;flex-direction:column;padding-top:60px;transition:transform .3s}
+
+    .sidebar-head{padding:1.3rem 1.2rem 1rem;border-bottom:1px solid rgba(200,0,20,.12)}
+    .sidebar-head .avatar{width:46px;height:46px;background:linear-gradient(135deg,#1a0000,#8b0010,#cc0015);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;margin-bottom:.6rem;box-shadow:0 0 14px rgba(200,0,20,.4)}
+    .sidebar-head .role{font-size:.68rem;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.12em;margin-top:.15rem}
+    .sidebar-head .name{font-size:.86rem;color:rgba(255,255,255,.75);font-weight:600}
+
+    /* section label */
+    .nav-label{font-size:.62rem;text-transform:uppercase;letter-spacing:.14em;color:rgba(255,255,255,.2);padding:.9rem 1.2rem .3rem;font-weight:600}
+
+    .sidebar nav{flex:1;overflow-y:auto;padding:.4rem 0}
+    .sidebar nav ul{padding:0}
+
+    .sidebar nav ul li a{display:flex;align-items:center;gap:.75rem;padding:.8rem 1.2rem;color:rgba(255,255,255,.4);font-size:.82rem;transition:all .2s;border-left:3px solid transparent}
+    .sidebar nav ul li a i{width:16px;text-align:center;font-size:.8rem;color:rgba(200,0,20,.45);transition:color .2s}
+    .sidebar nav ul li a:hover{color:rgba(255,255,255,.88);background:rgba(200,0,20,.08);border-left-color:rgba(200,0,20,.4)}
+    .sidebar nav ul li a:hover i{color:#ff4455}
+    .sidebar nav ul li a.active{color:#fff;background:rgba(200,0,20,.14);border-left-color:#cc0015}
+    .sidebar nav ul li a.active i{color:#ff3344}
+
+    .sidebar-footer{padding:1rem 1.2rem;border-top:1px solid rgba(200,0,20,.12);font-size:.66rem;color:rgba(255,255,255,.18);text-align:center}
+    .sidebar-footer span{color:#ff3344}
+
+    /* ── MAIN ── */
+    .main{margin-left:200px;padding-top:60px;min-height:100vh;background:#0d0000;transition:margin .3s}
+    .main-inner{padding:2rem;max-width:1200px}
+
+    .page-title{margin-bottom:1.8rem}
+    .page-title h1{font-size:1.3rem;font-weight:700;color:#fff}
+    .page-title p{font-size:.8rem;color:rgba(255,255,255,.3);margin-top:.2rem}
+    .breadcrumb-strip{display:flex;align-items:center;gap:.4rem;font-size:.72rem;color:rgba(255,255,255,.22);margin-top:.4rem}
+    .breadcrumb-strip span{color:#ff3344}
+
+    /* ── OVERLAY ── */
+    .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:998;backdrop-filter:blur(2px)}
+
+    /* ── RESPONSIVE ── */
+    @media(max-width:768px){
+      .topbar{padding:0 1rem}
+      .ham{display:flex}
+      .brand-text{display:none}
+      .sidebar{transform:translateX(-100%)}
+      .sidebar.open{transform:translateX(0)}
+      .overlay.open{display:block}
+      .main{margin-left:0}
+      .main-inner{padding:1.2rem}
+    }
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-head">
+    <div class="avatar"><i class="fas fa-user-shield" style="color:#ffaaaa"></i></div>
+    <div class="name">Admin Panel</div>
+    <div class="role"><i class="fas fa-shield-alt" style="color:#cc0015;margin-right:4px"></i>Administrator</div>
+  </div>
+
+  <nav>
+    <div class="nav-label">Navigation</div>
+    <ul>
+      <li><a href="/"><i class="fas fa-home"></i> Home</a></li>
+    </ul>
+
+    <div class="nav-label">Manage</div>
+    <ul>
+      <li><a href="/admin-donor"><i class="fas fa-user"></i> Donor</a></li>
+      <li><a href="/admin-patient"><i class="fas fa-user-injured"></i> Patient</a></li>
+      <li><a href="/admin-donation"><i class="fas fa-hand-holding-medical"></i> Donations</a></li>
+    </ul>
+
+    <div class="nav-label">Requests</div>
+    <ul>
+      <li><a href="/admin-request"><i class="fas fa-sync-alt"></i> Blood Requests</a></li>
+      <li><a href="/admin-request-history"><i class="fas fa-history"></i> Request History</a></li>
+    </ul>
+
+    <div class="nav-label">Inventory</div>
+    <ul>
+      <li><a href="/admin-blood"><i class="fas fa-hand-holding-water"></i> Blood Stock</a></li>
+    </ul>
+  </nav>
+
+  <div class="sidebar-footer">
+    Blood Bank &nbsp;|&nbsp; <span>India</span> &copy; 2025
+  </div>
+</aside>
+
+<!-- OVERLAY -->
+<div class="overlay" id="overlay"></div>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="ham" id="ham" onclick="toggleSidebar()">
+    <span></span><span></span><span></span>
+  </div>
+
+  <a href="/" class="brand">
+    <div class="brand-icon"><i class="fas fa-heartbeat"></i></div>
+    <span class="brand-text">Blood Bank Management</span>
+  </a>
+
+  <div class="topbar-right">
+    <div class="admin-pill">
+      <i class="fas fa-user-shield"></i> Admin
+    </div>
+    <a href="/logout" class="logout-btn">
+      <i class="fas fa-sign-out-alt"></i> Logout
+    </a>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main class="main" id="main">
+  <div class="main-inner">
+
+    <div class="page-title">
+      <div class="breadcrumb-strip">
+        <i class="fas fa-user-shield" style="color:#cc0015"></i>
+        <span>Admin</span> &rsaquo; Dashboard
+      </div>
+      <h1>Admin Dashboard</h1>
+      <p>Manage donors, patients, donations and blood stock.</p>
+    </div>
+
+    {% block content %}
+    {% endblock content %}
+
+  </div>
+</main>
+
+<script>
+  function toggleSidebar(){
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('overlay').classList.toggle('open');
+  }
+  document.getElementById('overlay').addEventListener('click',toggleSidebar);
+
+  // active link
+  const links=document.querySelectorAll('.sidebar nav a');
+  links.forEach(a=>{
+    if(a.href===window.location.href) a.classList.add('active');
+  });
+</script>
+
+</body>
+</html>

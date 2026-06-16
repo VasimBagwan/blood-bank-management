@@ -1,0 +1,101 @@
+{% extends 'blood/adminbase.html' %}
+{% load static %}
+{% block content %}
+
+<style>
+  .page-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.8rem;flex-wrap:wrap;gap:1rem}
+  .page-head h2{font-size:1.2rem;font-weight:700;color:#fff;margin:0}
+  .page-head p{font-size:.76rem;color:rgba(255,255,255,.3);margin:.2rem 0 0}
+  .sec-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.14em;color:rgba(255,255,255,.22);font-weight:600;margin:0 0 .9rem;display:flex;align-items:center;gap:.5rem}
+  .sec-label::after{content:'';flex:1;height:1px;background:rgba(200,0,20,.15)}
+
+  .dark-table-wrap{background:rgba(18,0,0,0.93);border:1px solid rgba(200,0,20,.22);border-radius:16px;overflow:hidden}
+  .dark-table{width:100%;border-collapse:collapse}
+  .dark-table thead tr{background:rgba(200,0,20,.18);border-bottom:1px solid rgba(200,0,20,.35)}
+  .dark-table thead th{padding:.9rem 1.1rem;font-size:.72rem;text-transform:uppercase;letter-spacing:.09em;color:rgba(255,255,255,.55);font-weight:600;white-space:nowrap}
+  .dark-table tbody tr{border-bottom:1px solid rgba(200,0,20,.08);transition:background .2s}
+  .dark-table tbody tr:last-child{border-bottom:none}
+  .dark-table tbody tr:hover{background:rgba(200,0,20,.07)}
+  .dark-table tbody td{padding:.9rem 1.1rem;font-size:.84rem;color:rgba(255,255,255,.7);vertical-align:middle}
+
+  .avatar-img{width:38px;height:38px;border-radius:50%;object-fit:cover;border:2px solid rgba(200,0,20,.35)}
+  .blood-badge{display:inline-block;background:rgba(200,0,20,.18);border:1px solid rgba(200,0,20,.35);color:#ff4455;font-weight:700;font-size:.75rem;padding:.2rem .6rem;border-radius:20px}
+  .disease-badge{display:inline-block;background:rgba(255,150,0,.1);border:1px solid rgba(255,150,0,.25);color:rgba(255,180,80,.8);font-size:.74rem;padding:.2rem .6rem;border-radius:20px}
+
+  .btn-edit{display:inline-flex;align-items:center;gap:.35rem;background:rgba(30,80,200,.2);border:1px solid rgba(30,80,200,.35);color:#6699ff;font-size:.75rem;padding:.32rem .8rem;border-radius:8px;text-decoration:none;transition:all .2s;margin-right:.3rem}
+  .btn-edit:hover{background:rgba(30,80,200,.35);color:#99bbff;text-decoration:none}
+  .btn-del{display:inline-flex;align-items:center;gap:.35rem;background:rgba(200,0,20,.15);border:1px solid rgba(200,0,20,.3);color:#ff4455;font-size:.75rem;padding:.32rem .8rem;border-radius:8px;text-decoration:none;transition:all .2s}
+  .btn-del:hover{background:rgba(200,0,20,.3);color:#ff6677;text-decoration:none}
+
+  .empty-row td{text-align:center;padding:2.5rem;color:rgba(255,255,255,.2);font-size:.88rem}
+
+  @media(max-width:768px){
+    .dark-table thead{display:none}
+    .dark-table tbody tr{display:block;margin-bottom:1rem;border:1px solid rgba(200,0,20,.2);border-radius:12px;padding:.8rem}
+    .dark-table tbody td{display:flex;justify-content:space-between;align-items:center;padding:.4rem .6rem;border:none;font-size:.82rem}
+    .dark-table tbody td::before{content:attr(data-label);color:rgba(255,255,255,.3);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;flex-shrink:0;margin-right:.8rem}
+  }
+</style>
+
+<!-- PAGE HEADER -->
+<div class="page-head">
+  <div>
+    <div class="sec-label" style="margin-bottom:.4rem">
+      <i class="fas fa-user-injured" style="color:#cc0015"></i> Manage
+    </div>
+    <h2>Patient Details</h2>
+    <p>View and manage all registered patients</p>
+  </div>
+</div>
+
+<!-- TABLE -->
+<div class="dark-table-wrap">
+  <table class="dark-table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Profile</th>
+        <th>Blood Group</th>
+        <th>Age</th>
+        <th>Disease</th>
+        <th>Mobile</th>
+        <th style="text-align:right">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for t in patients %}
+      <tr>
+        <td data-label="Name">{{t.get_name}}</td>
+        <td data-label="Profile">
+          <img class="avatar-img" src="{% static t.profile_pic.url %}" alt="Profile">
+        </td>
+        <td data-label="Blood Group">
+          <span class="blood-badge">{{t.bloodgroup}}</span>
+        </td>
+        <td data-label="Age">{{t.age}}</td>
+        <td data-label="Disease">
+          <span class="disease-badge">{{t.disease}}</span>
+        </td>
+        <td data-label="Mobile">{{t.mobile}}</td>
+        <td data-label="Action" style="text-align:right">
+          <a class="btn-edit" href="{% url 'update-patient' t.id %}">
+            <i class="fas fa-pen"></i> Edit
+          </a>
+          <a class="btn-del" href="{% url 'delete-patient' t.id %}">
+            <i class="fas fa-trash"></i> Delete
+          </a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr class="empty-row">
+        <td colspan="7">
+          <i class="fas fa-user-injured" style="color:rgba(200,0,20,.3);font-size:2rem;display:block;margin-bottom:.6rem"></i>
+          No patients found
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock content %}

@@ -1,0 +1,185 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Logged Out - Blood Bank</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.css">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    html,body{width:100%;min-height:100%;background:#0d0000;font-family:'Segoe UI',sans-serif;overflow-x:hidden}
+
+    /* ── NAVBAR ── */
+    .topnav{width:100%;height:60px;background:rgba(10,0,0,0.97);border-bottom:1px solid rgba(200,0,20,0.3);display:flex;align-items:center;justify-content:space-between;padding:0 2.5rem;position:sticky;top:0;z-index:999}
+    .brand{color:#fff;font-size:16px;font-weight:600;display:flex;align-items:center;gap:10px;text-decoration:none}
+    .brand-icon{width:32px;height:32px;background:#cc0015;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;flex-shrink:0;animation:hb 1.4s ease-in-out infinite}
+    @keyframes hb{0%,100%{transform:scale(1)}14%{transform:scale(1.25)}28%{transform:scale(1)}42%{transform:scale(1.15)}}
+    .nav-links{display:flex;gap:2rem;list-style:none;margin:0;padding:0}
+    .nav-links a{color:rgba(255,255,255,0.75);text-decoration:none;font-size:14px;transition:color .2s}
+    .nav-links a:hover{color:#ff4455}
+
+    /* ── PAGE ── */
+    .page{min-height:calc(100vh - 60px);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:2rem 1rem}
+    canvas#bgc{position:absolute;top:0;left:0;width:100%;height:100%;display:block}
+
+    /* ── CARD ── */
+    .logout-card{position:relative;z-index:5;background:rgba(18,0,0,0.93);border:1px solid rgba(200,0,20,0.28);border-radius:20px;width:100%;max-width:460px;overflow:hidden;backdrop-filter:blur(12px);box-shadow:0 20px 60px rgba(0,0,0,0.5);text-align:center}
+
+    .card-head{background:linear-gradient(135deg,#cc0015,#8b0010);padding:2.2rem 1.5rem;position:relative;overflow:hidden}
+    .card-head::before{content:'';position:absolute;top:-30px;right:-30px;width:100px;height:100px;background:rgba(255,255,255,.06);border-radius:50%}
+    .card-head::after{content:'';position:absolute;bottom:-20px;left:-20px;width:70px;height:70px;background:rgba(255,255,255,.04);border-radius:50%}
+
+    .logout-icon{width:70px;height:70px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto .9rem;font-size:1.8rem;color:#fff;position:relative;z-index:1;animation:popIn .5s ease-out}
+    @keyframes popIn{0%{transform:scale(0);opacity:0}70%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
+
+    .card-head h2{color:#fff;font-size:1.4rem;font-weight:700;position:relative;z-index:1;margin-bottom:.3rem}
+    .card-head p{color:rgba(255,255,255,.65);font-size:.82rem;position:relative;z-index:1}
+
+    /* ── BODY ── */
+    .card-body{padding:2rem 2rem 2rem}
+
+    .thank-msg{color:rgba(255,255,255,.55);font-size:.9rem;line-height:1.7;margin-bottom:1.8rem}
+    .thank-msg strong{color:rgba(255,255,255,.85);display:block;font-size:1.05rem;margin-bottom:.4rem}
+
+    /* divider */
+    .divider{display:flex;align-items:center;gap:.8rem;margin-bottom:1.6rem}
+    .divider::before,.divider::after{content:'';flex:1;height:1px;background:rgba(200,0,20,.18)}
+    .divider span{color:rgba(255,255,255,.2);font-size:.7rem;white-space:nowrap}
+
+    /* buttons */
+    .btn-home{display:flex;align-items:center;justify-content:center;gap:.6rem;width:100%;background:#cc0015;color:#fff;border:none;border-radius:10px;padding:.85rem;font-size:.95rem;font-weight:700;cursor:pointer;transition:all .25s;box-shadow:0 4px 20px rgba(200,0,20,.45);text-decoration:none;margin-bottom:.8rem}
+    .btn-home:hover{background:#ff1a2a;transform:translateY(-2px);box-shadow:0 8px 28px rgba(200,0,20,.65);color:#fff;text-decoration:none}
+
+    .login-links{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem}
+    .login-link{display:flex;flex-direction:column;align-items:center;gap:.3rem;background:rgba(255,255,255,.04);border:1px solid rgba(200,0,20,.18);border-radius:10px;padding:.7rem .5rem;text-decoration:none;color:rgba(255,255,255,.5);font-size:.72rem;transition:all .22s}
+    .login-link i{font-size:.95rem;color:rgba(200,0,20,.5);transition:color .22s}
+    .login-link:hover{background:rgba(200,0,20,.1);border-color:rgba(200,0,20,.4);color:rgba(255,255,255,.85);text-decoration:none}
+    .login-link:hover i{color:#ff4455}
+
+    /* ── FOOTER ── */
+    .ft{background:#0a0000;border-top:1px solid rgba(200,0,20,.2);color:rgba(255,255,255,.35);text-align:center;padding:1.2rem;font-size:.78rem}
+    .ft span{color:#ff3344}
+
+    @media(max-width:480px){
+      .topnav{padding:0 1rem}
+      .nav-links{gap:1rem}
+      .nav-links a{font-size:12px}
+      .card-body{padding:1.5rem 1.2rem}
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="topnav">
+  <a href="/" class="brand">
+    <div class="brand-icon">+</div>
+    Blood Bank Management
+  </a>
+  <ul class="nav-links">
+    <li><a href="/"><i class="fas fa-home"></i> Home</a></li>
+    <li><a href="/patient/patientlogin"><i class="fas fa-procedures"></i> Patient</a></li>
+    <li><a href="/donor/donorlogin"><i class="fas fa-user"></i> Donor</a></li>
+    <li><a href="/adminlogin"><i class="fas fa-user-shield"></i> Admin</a></li>
+  </ul>
+</nav>
+
+<!-- PAGE -->
+<div class="page" id="pg">
+  <canvas id="bgc"></canvas>
+
+  <div class="logout-card">
+
+    <!-- CARD HEAD -->
+    <div class="card-head">
+      <div class="logout-icon">
+        <i class="fas fa-sign-out-alt"></i>
+      </div>
+      <h2>You Have Been Logged Out</h2>
+      <p>Your session has been ended safely</p>
+    </div>
+
+    <!-- CARD BODY -->
+    <div class="card-body">
+      <div class="thank-msg">
+        <strong>Thank you for using our platform!</strong>
+        We hope you had a great experience. Your contribution to saving lives means everything.
+      </div>
+
+      <a href="/" class="btn-home">
+        <i class="fas fa-home"></i> Back to Home
+      </a>
+
+      <div class="divider"><span>or login again as</span></div>
+
+      <div class="login-links">
+        <a href="/patient/patientlogin" class="login-link">
+          <i class="fas fa-procedures"></i>
+          Patient
+        </a>
+        <a href="/donor/donorlogin" class="login-link">
+          <i class="fas fa-tint"></i>
+          Donor
+        </a>
+        <a href="/adminlogin" class="login-link">
+          <i class="fas fa-user-shield"></i>
+          Admin
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="ft">
+  Blood Bank Management System &nbsp;|&nbsp; Made in <span>India</span> &copy; 2025
+</div>
+
+<script>
+(function(){
+  const cv=document.getElementById('bgc');
+  const cx=cv.getContext('2d');
+  const pg=document.getElementById('pg');
+
+  function rsz(){cv.width=pg.clientWidth;cv.height=pg.clientHeight}
+  rsz();window.addEventListener('resize',rsz);
+
+  const pts=Array.from({length:35},()=>({
+    x:Math.random()*cv.width,y:Math.random()*cv.height,
+    r:Math.random()*2.5+.5,
+    vx:(Math.random()-.5)*.4,vy:(Math.random()-.5)*.4,
+    a:Math.random()*.35+.08
+  }));
+  const drps=[];
+  setInterval(()=>{
+    drps.push({x:Math.random()*cv.width,y:-15,vy:1.2+Math.random()*2.2,r:1.5+Math.random()*3,a:.5+Math.random()*.35});
+  },380);
+
+  function draw(){
+    cv.width=pg.clientWidth;cv.height=pg.clientHeight;
+    cx.fillStyle='#0d0000';cx.fillRect(0,0,cv.width,cv.height);
+    const g=cx.createRadialGradient(cv.width/2,cv.height/2,10,cv.width/2,cv.height/2,cv.height*.72);
+    g.addColorStop(0,'rgba(100,0,8,.32)');g.addColorStop(1,'rgba(0,0,0,0)');
+    cx.fillStyle=g;cx.fillRect(0,0,cv.width,cv.height);
+    pts.forEach(p=>{
+      p.x+=p.vx;p.y+=p.vy;
+      if(p.x<0||p.x>cv.width)p.vx*=-1;
+      if(p.y<0||p.y>cv.height)p.vy*=-1;
+      cx.beginPath();cx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      cx.fillStyle='rgba(170,0,12,'+p.a+')';cx.fill();
+    });
+    for(let i=drps.length-1;i>=0;i--){
+      const d=drps[i];d.y+=d.vy;
+      cx.beginPath();cx.arc(d.x,d.y,d.r,0,Math.PI*2);
+      cx.fillStyle='rgba(150,0,10,'+d.a+')';cx.fill();
+      if(d.y>cv.height+10)drps.splice(i,1);
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+</script>
+
+</body>
+</html>

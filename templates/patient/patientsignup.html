@@ -1,0 +1,237 @@
+{% load static %}
+{% load widget_tweaks %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Patient Signup - Blood Bank</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.css">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    html,body{width:100%;min-height:100%;background:#0d0000;font-family:'Segoe UI',sans-serif;overflow-x:hidden}
+
+    /* ── NAVBAR ── */
+    .topnav{width:100%;height:60px;background:rgba(10,0,0,0.97);border-bottom:1px solid rgba(200,0,20,0.3);display:flex;align-items:center;justify-content:space-between;padding:0 2.5rem;position:sticky;top:0;z-index:999}
+    .brand{color:#fff;font-size:16px;font-weight:600;display:flex;align-items:center;gap:10px;text-decoration:none}
+    .brand-icon{width:32px;height:32px;background:#cc0015;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;flex-shrink:0;animation:hb 1.4s ease-in-out infinite}
+    @keyframes hb{0%,100%{transform:scale(1)}14%{transform:scale(1.25)}28%{transform:scale(1)}42%{transform:scale(1.15)}}
+    .nav-links{display:flex;gap:2rem;list-style:none;margin:0;padding:0}
+    .nav-links a{color:rgba(255,255,255,0.75);text-decoration:none;font-size:14px;transition:color .2s}
+    .nav-links a:hover{color:#ff4455}
+
+    /* ── PAGE ── */
+    .page{min-height:calc(100vh - 60px);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:2rem 1rem}
+    canvas#bgc{position:absolute;top:0;left:0;width:100%;height:100%;display:block}
+
+    /* ── CARD ── */
+    .signup-card{position:relative;z-index:5;background:rgba(18,0,0,0.93);border:1px solid rgba(200,0,20,0.28);border-radius:20px;width:100%;max-width:620px;overflow:hidden;backdrop-filter:blur(12px);box-shadow:0 20px 60px rgba(0,0,0,0.5)}
+
+    .card-head{background:linear-gradient(135deg,#cc0015,#8b0010);padding:1.8rem 1.5rem;display:flex;align-items:center;gap:1rem;position:relative;overflow:hidden}
+    .card-head::before{content:'';position:absolute;top:-20px;right:-20px;width:90px;height:90px;background:rgba(255,255,255,.06);border-radius:50%}
+    .card-head::after{content:'';position:absolute;bottom:-15px;left:-15px;width:60px;height:60px;background:rgba(255,255,255,.04);border-radius:50%}
+    .head-icon{width:48px;height:48px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:#fff;flex-shrink:0;position:relative;z-index:1}
+    .card-head h2{color:#fff;font-size:1.3rem;font-weight:700;margin:0;position:relative;z-index:1}
+    .card-head p{color:rgba(255,255,255,.6);font-size:.8rem;margin:.2rem 0 0;position:relative;z-index:1}
+
+    /* ── FORM ── */
+    .card-body{padding:2rem}
+    .field-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem}
+    .field-full{grid-column:1/-1}
+    .field{display:flex;flex-direction:column;gap:.42rem}
+    .field label{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.4);font-weight:600;display:flex;align-items:center;gap:.4rem}
+    .field label i{color:rgba(200,0,20,.5);font-size:.75rem}
+
+    .field input,.field select{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(200,0,20,.22);border-radius:10px;padding:.72rem 1rem;color:#fff;font-size:.88rem;outline:none;transition:all .25s;font-family:'Segoe UI',sans-serif;appearance:none;-webkit-appearance:none}
+    .field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%23ff4455' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:2.5rem;background-color:rgba(255,255,255,.05)}
+    .field select option{background:#1a0000;color:#fff}
+    .field input:focus,.field select:focus{border-color:#cc0015;background:rgba(200,0,20,.08);box-shadow:0 0 0 3px rgba(200,0,20,.12)}
+    .field input::placeholder{color:rgba(255,255,255,.2)}
+    .field input[type="file"]{padding:.58rem 1rem;color:rgba(255,255,255,.45);cursor:pointer}
+    .field input[type="file"]::-webkit-file-upload-button{background:#cc0015;color:#fff;border:none;padding:.3rem .85rem;border-radius:6px;cursor:pointer;font-size:.78rem;margin-right:.8rem}
+
+    .form-divider{height:1px;background:rgba(200,0,20,.12);margin:1.4rem 0}
+
+    .btn-register{width:100%;background:#cc0015;color:#fff;border:none;border-radius:10px;padding:.85rem;font-size:.95rem;font-weight:700;cursor:pointer;transition:all .25s;box-shadow:0 4px 20px rgba(200,0,20,.45);display:flex;align-items:center;justify-content:center;gap:.5rem}
+    .btn-register:hover{background:#ff1a2a;transform:translateY(-2px);box-shadow:0 8px 28px rgba(200,0,20,.65)}
+
+    .login-link{text-align:center;margin-top:1.2rem;color:rgba(255,255,255,.38);font-size:.82rem}
+    .login-link a{color:#ff3344;text-decoration:none;font-weight:600}
+    .login-link a:hover{color:#ff6677}
+
+    /* ── FOOTER ── */
+    .ft{background:#0a0000;border-top:1px solid rgba(200,0,20,.2);color:rgba(255,255,255,.35);text-align:center;padding:1.2rem;font-size:.78rem}
+    .ft span{color:#ff3344}
+
+    @media(max-width:580px){
+      .topnav{padding:0 1rem}
+      .nav-links{gap:1rem}
+      .nav-links a{font-size:12px}
+      .field-grid{grid-template-columns:1fr}
+      .field-full{grid-column:auto}
+      .card-body{padding:1.3rem}
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="topnav">
+  <a href="/" class="brand">
+    <div class="brand-icon">+</div>
+    Blood Bank Management
+  </a>
+  <ul class="nav-links">
+    <li><a href="/"><i class="fas fa-home"></i> Home</a></li>
+    <li><a href="/patient/patientlogin"><i class="fas fa-procedures"></i> Patient</a></li>
+    <li><a href="/donor/donorlogin"><i class="fas fa-tint"></i> Donor</a></li>
+    <li><a href="/adminlogin"><i class="fas fa-user-shield"></i> Admin</a></li>
+  </ul>
+</nav>
+
+<!-- PAGE -->
+<div class="page" id="pg">
+  <canvas id="bgc"></canvas>
+
+  <div class="signup-card">
+
+    <!-- HEAD -->
+    <div class="card-head">
+      <div class="head-icon"><i class="fas fa-user-plus"></i></div>
+      <div>
+        <h2>Patient Signup</h2>
+        <p>Create your account to request blood</p>
+      </div>
+    </div>
+
+    <!-- BODY -->
+    <div class="card-body">
+      <form method="POST" autocomplete="off" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="field-grid">
+
+          <div class="field">
+            <label><i class="fas fa-user"></i> First Name</label>
+            {% render_field userForm.first_name placeholder="First name" required=True %}
+          </div>
+
+          <div class="field">
+            <label><i class="fas fa-user"></i> Last Name</label>
+            {% render_field userForm.last_name placeholder="Last name" required=True %}
+          </div>
+
+          <div class="field">
+            <label><i class="fas fa-at"></i> Username</label>
+            {% render_field userForm.username placeholder="Choose a username" required=True %}
+          </div>
+
+          <div class="field">
+            <label><i class="fas fa-lock"></i> Password</label>
+            {% render_field userForm.password placeholder="Create password" required=True %}
+          </div>
+
+          <div class="field">
+            <label><i class="fas fa-birthday-cake"></i> Age</label>
+            {% render_field patientForm.age placeholder="Your age" required=True %}
+          </div>
+
+          <div class="field">
+            <label><i class="fas fa-tint"></i> Blood Group</label>
+            <select name="bloodgroup" required>
+              <option value="" disabled selected>Choose Blood Group</option>
+              <option>O+</option><option>O-</option>
+              <option>A+</option><option>A-</option>
+              <option>B+</option><option>B-</option>
+              <option>AB+</option><option>AB-</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label><i class="fas fa-virus"></i> Disease</label>
+            {% render_field patientForm.disease placeholder="Disease (if any)" required=True %}
+          </div>
+
+          <div class="field">
+            <label><i class="fas fa-user-md"></i> Doctor Name</label>
+           {% render_field patientForm.doctorname placeholder="Doctor name" required=True %}
+          </div>
+
+          <div class="field field-full">
+            <label><i class="fas fa-map-marker-alt"></i> Address</label>
+            {% render_field patientForm.address placeholder="Full address" required=True %}
+          </div>
+
+          <div class="field">
+            <label><i class="fas fa-phone"></i> Mobile</label>
+            {% render_field patientForm.mobile placeholder="Mobile number" required=True %}
+          </div>
+
+          <div class="field">
+            <label><i class="fas fa-image"></i> Profile Picture</label>
+            {% render_field patientForm.profile_pic required=True %}
+          </div>
+
+        </div>
+
+        <div class="form-divider"></div>
+
+        <button type="submit" class="btn-register">
+          <i class="fas fa-user-plus"></i> Register as Patient
+        </button>
+      </form>
+
+      <p class="login-link">
+        Already have an account? &nbsp;
+        <a href="/patient/patientlogin">Click here to login</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="ft">
+  Blood Bank Management System &nbsp;|&nbsp; Made in <span>India</span> &copy; 2025
+</div>
+
+<script>
+(function(){
+  const cv=document.getElementById('bgc');
+  const cx=cv.getContext('2d');
+  const pg=document.getElementById('pg');
+  function rsz(){cv.width=pg.clientWidth;cv.height=pg.clientHeight}
+  rsz();window.addEventListener('resize',rsz);
+  const pts=Array.from({length:35},()=>({
+    x:Math.random()*cv.width,y:Math.random()*cv.height,
+    r:Math.random()*2.5+.5,vx:(Math.random()-.5)*.4,vy:(Math.random()-.5)*.4,
+    a:Math.random()*.35+.08
+  }));
+  const drps=[];
+  setInterval(()=>{drps.push({x:Math.random()*cv.width,y:-15,vy:1.2+Math.random()*2.2,r:1.5+Math.random()*3,a:.5+Math.random()*.35});},380);
+  function draw(){
+    cv.width=pg.clientWidth;cv.height=pg.clientHeight;
+    cx.fillStyle='#0d0000';cx.fillRect(0,0,cv.width,cv.height);
+    const g=cx.createRadialGradient(cv.width/2,cv.height/2,10,cv.width/2,cv.height/2,cv.height*.72);
+    g.addColorStop(0,'rgba(100,0,8,.32)');g.addColorStop(1,'rgba(0,0,0,0)');
+    cx.fillStyle=g;cx.fillRect(0,0,cv.width,cv.height);
+    pts.forEach(p=>{
+      p.x+=p.vx;p.y+=p.vy;
+      if(p.x<0||p.x>cv.width)p.vx*=-1;
+      if(p.y<0||p.y>cv.height)p.vy*=-1;
+      cx.beginPath();cx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      cx.fillStyle='rgba(170,0,12,'+p.a+')';cx.fill();
+    });
+    for(let i=drps.length-1;i>=0;i--){
+      const d=drps[i];d.y+=d.vy;
+      cx.beginPath();cx.arc(d.x,d.y,d.r,0,Math.PI*2);
+      cx.fillStyle='rgba(150,0,10,'+d.a+')';cx.fill();
+      if(d.y>cv.height+10)drps.splice(i,1);
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+</script>
+
+</body>
+</html>

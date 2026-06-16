@@ -1,0 +1,93 @@
+{% extends 'donor/donorbase.html' %}
+{% load static %}
+{% load widget_tweaks %}
+{% block content %}
+
+<style>
+  .page-head{margin-bottom:1.8rem}
+  .page-head h2{font-size:1.2rem;font-weight:700;color:#fff;margin:0}
+  .page-head p{font-size:.76rem;color:rgba(255,255,255,.3);margin:.2rem 0 0}
+  .sec-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.14em;color:rgba(255,255,255,.22);font-weight:600;margin:0 0 .9rem;display:flex;align-items:center;gap:.5rem}
+  .sec-label::after{content:'';flex:1;height:1px;background:rgba(200,0,20,.15)}
+
+  .dark-table-wrap{background:rgba(18,0,0,0.93);border:1px solid rgba(200,0,20,.22);border-radius:16px;overflow:hidden}
+  .dark-table{width:100%;border-collapse:collapse}
+  .dark-table thead tr{background:rgba(200,0,20,.18);border-bottom:1px solid rgba(200,0,20,.35)}
+  .dark-table thead th{padding:.9rem 1.1rem;font-size:.72rem;text-transform:uppercase;letter-spacing:.09em;color:rgba(255,255,255,.55);font-weight:600;white-space:nowrap}
+  .dark-table tbody tr{border-bottom:1px solid rgba(200,0,20,.08);transition:background .2s}
+  .dark-table tbody tr:last-child{border-bottom:none}
+  .dark-table tbody tr:hover{background:rgba(200,0,20,.07)}
+  .dark-table tbody td{padding:.9rem 1.1rem;font-size:.84rem;color:rgba(255,255,255,.7);vertical-align:middle}
+
+  .blood-badge{display:inline-block;background:rgba(200,0,20,.18);border:1px solid rgba(200,0,20,.35);color:#ff4455;font-weight:700;font-size:.75rem;padding:.2rem .6rem;border-radius:20px}
+  .status-pending{display:inline-flex;align-items:center;gap:.3rem;background:rgba(33,150,243,.12);border:1px solid rgba(33,150,243,.3);color:#64b5f6;font-size:.73rem;padding:.22rem .65rem;border-radius:20px;font-weight:600}
+  .status-approved{display:inline-flex;align-items:center;gap:.3rem;background:rgba(255,150,0,.12);border:1px solid rgba(255,150,0,.3);color:#ffaa44;font-size:.73rem;padding:.22rem .65rem;border-radius:20px;font-weight:600}
+  .status-rejected{display:inline-flex;align-items:center;gap:.3rem;background:rgba(200,0,20,.15);border:1px solid rgba(200,0,20,.3);color:#ff4455;font-size:.73rem;padding:.22rem .65rem;border-radius:20px;font-weight:600}
+
+  .empty-card{background:rgba(18,0,0,.93);border:1px solid rgba(200,0,20,.2);border-radius:16px;padding:3rem;text-align:center}
+  .empty-card i{font-size:2.5rem;color:rgba(200,0,20,.3);display:block;margin-bottom:.8rem}
+  .empty-card p{color:rgba(255,255,255,.3);font-size:.9rem}
+
+  @media(max-width:768px){
+    .dark-table thead{display:none}
+    .dark-table tbody tr{display:block;margin-bottom:1rem;border:1px solid rgba(200,0,20,.2);border-radius:12px;padding:.8rem}
+    .dark-table tbody td{display:flex;justify-content:space-between;align-items:center;padding:.4rem .6rem;border:none;font-size:.82rem}
+    .dark-table tbody td::before{content:attr(data-label);color:rgba(255,255,255,.3);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;flex-shrink:0;margin-right:.8rem}
+  }
+</style>
+
+<!-- PAGE HEADER -->
+<div class="page-head">
+  <div class="sec-label" style="margin-bottom:.4rem">
+    <i class="fas fa-history" style="color:#cc0015"></i> Donor &rsaquo; Donation History
+  </div>
+  <h2>My Donation History</h2>
+  <p>Track the status of all your blood donations</p>
+</div>
+
+{% if donations %}
+<div class="dark-table-wrap">
+  <table class="dark-table">
+    <thead>
+      <tr>
+        <th>Age</th>
+        <th>Disease</th>
+        <th>Blood Group</th>
+        <th>Unit (ml)</th>
+        <th>Date</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for t in donations %}
+      <tr>
+        <td data-label="Age">{{t.age}}</td>
+        <td data-label="Disease">{{t.disease}}</td>
+        <td data-label="Blood Group">
+          <span class="blood-badge">{{t.bloodgroup}}</span>
+        </td>
+        <td data-label="Unit">{{t.unit}} ml</td>
+        <td data-label="Date">{{t.date}}</td>
+        <td data-label="Status">
+          {% if t.status == 'Approved' %}
+            <span class="status-approved"><i class="fas fa-check-circle"></i> Approved</span>
+          {% elif t.status == 'Rejected' %}
+            <span class="status-rejected"><i class="fas fa-times-circle"></i> Rejected</span>
+          {% else %}
+            <span class="status-pending"><i class="fas fa-clock"></i> Pending</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% else %}
+<div class="empty-card">
+  <i class="fas fa-hand-holding-medical"></i>
+  <p>No donations found yet! Start donating to save lives.</p>
+</div>
+{% endif %}
+
+{% endblock content %}

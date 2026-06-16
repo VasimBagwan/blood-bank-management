@@ -1,0 +1,256 @@
+{% extends 'donor/donorbase.html' %}
+{% block content %}
+{% load widget_tweaks %}
+{% load static %}
+
+<style>
+  .page-wrap{padding:2rem 0}
+
+  .form-card{
+    background:rgba(18,0,0,0.93);
+    border:1px solid rgba(200,0,20,0.25);
+    border-radius:16px;
+    overflow:hidden;
+    max-width:580px;
+    box-shadow:0 16px 48px rgba(0,0,0,0.4);
+  }
+
+  .form-head{
+    background:linear-gradient(135deg,#1a0000,#8b0010,#cc0015);
+    padding:1.4rem 1.8rem;
+    display:flex;
+    align-items:center;
+    gap:1rem;
+    position:relative;
+    overflow:hidden;
+  }
+  .form-head::after{
+    content:'';
+    position:absolute;
+    top:-20px;right:-20px;
+    width:90px;height:90px;
+    background:rgba(255,255,255,.05);
+    border-radius:50%;
+  }
+  .form-head-icon{
+    width:42px;height:42px;
+    background:rgba(255,255,255,.12);
+    border-radius:10px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:1.1rem;color:#fff;
+    flex-shrink:0;
+  }
+  .form-head h2{
+    font-size:1.05rem;
+    font-weight:700;
+    color:#fff;
+    margin:0;
+    letter-spacing:.04em;
+    text-transform:uppercase;
+  }
+  .form-head p{
+    font-size:.72rem;
+    color:rgba(255,255,255,.55);
+    margin:.15rem 0 0;
+  }
+
+  .form-body{padding:1.8rem}
+
+  .info-strip{
+    background:rgba(200,0,20,.08);
+    border:1px solid rgba(200,0,20,.2);
+    border-radius:8px;
+    padding:.7rem 1rem;
+    margin-bottom:1.5rem;
+    display:flex;
+    align-items:center;
+    gap:.6rem;
+    font-size:.75rem;
+    color:rgba(255,255,255,.45);
+  }
+  .info-strip i{color:#ff4455;flex-shrink:0}
+
+  .field{margin-bottom:1.2rem}
+  .field label{
+    display:block;
+    font-size:.68rem;
+    text-transform:uppercase;
+    letter-spacing:.12em;
+    color:rgba(255,255,255,.45);
+    font-weight:600;
+    margin-bottom:.45rem;
+  }
+  .field label span{color:#ff4455}
+
+  .input-wrap{position:relative}
+  .input-wrap i{
+    position:absolute;
+    left:12px;top:50%;
+    transform:translateY(-50%);
+    color:rgba(200,0,20,.5);
+    font-size:.82rem;
+    pointer-events:none;
+  }
+  .input-wrap input,
+  .input-wrap select,
+  .input-wrap textarea{
+    width:100%;
+    background:rgba(255,255,255,.04);
+    border:1px solid rgba(200,0,20,.2);
+    border-radius:9px;
+    padding:.72rem 1rem .72rem 2.3rem;
+    color:#fff;
+    font-size:.88rem;
+    outline:none;
+    transition:all .22s;
+    font-family:'Segoe UI',sans-serif;
+    appearance:none;
+    -webkit-appearance:none;
+  }
+  .input-wrap select{
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='rgba(200,0,20,0.6)' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;
+    background-position:right 12px center;
+    padding-right:2rem;
+    cursor:pointer;
+  }
+  .input-wrap select option{background:#1a0000;color:#fff}
+  .input-wrap textarea{
+    padding-top:.75rem;
+    resize:vertical;
+    min-height:90px;
+    line-height:1.5;
+  }
+  .input-wrap input:focus,
+  .input-wrap select:focus,
+  .input-wrap textarea:focus{
+    border-color:#cc0015;
+    background:rgba(200,0,20,.07);
+    box-shadow:0 0 0 3px rgba(200,0,20,.1);
+  }
+  .input-wrap input::placeholder,
+  .input-wrap textarea::placeholder{color:rgba(255,255,255,.18)}
+
+  .form-row-2{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:1rem;
+  }
+
+  .btn-submit{
+    width:100%;
+    background:#cc0015;
+    color:#fff;
+    border:none;
+    border-radius:9px;
+    padding:.88rem;
+    font-size:.92rem;
+    font-weight:700;
+    cursor:pointer;
+    transition:all .22s;
+    margin-top:.5rem;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    box-shadow:0 4px 18px rgba(200,0,20,.35);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:.5rem;
+  }
+  .btn-submit:hover{
+    background:#ff1a2a;
+    transform:translateY(-2px);
+    box-shadow:0 8px 26px rgba(200,0,20,.55);
+  }
+  .btn-submit:active{transform:translateY(0)}
+
+  @media(max-width:560px){
+    .form-row-2{grid-template-columns:1fr}
+  }
+</style>
+
+<div class="page-wrap">
+  <div class="form-card">
+
+    <div class="form-head">
+      <div class="form-head-icon">
+        <i class="fas fa-tint"></i>
+      </div>
+      <div>
+        <h2>Make Blood Request</h2>
+        <p>Fill in the details to request blood</p>
+      </div>
+    </div>
+
+    <div class="form-body">
+
+      <div class="info-strip">
+        <i class="fas fa-info-circle"></i>
+        Your request will be reviewed by the admin. Please provide accurate details.
+      </div>
+
+      <form method="POST" autocomplete="off" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="form-row-2">
+          <div class="field">
+            <label>Patient Name <span>*</span></label>
+            <div class="input-wrap">
+              <i class="fas fa-user"></i>
+              {% render_field request_form.patient_name placeholder="Enter patient name" class="input--style-5" %}
+            </div>
+          </div>
+          <div class="field">
+            <label>Patient Age <span>*</span></label>
+            <div class="input-wrap">
+              <i class="fas fa-birthday-cake"></i>
+              {% render_field request_form.patient_age placeholder="Age in years" class="input--style-5" %}
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Reason <span>*</span></label>
+          <div class="input-wrap">
+            <i class="fas fa-notes-medical" style="top:1rem;transform:none"></i>
+            {% render_field request_form.reason placeholder="Reason for blood request" class="input--style-5" %}
+          </div>
+        </div>
+
+        <div class="form-row-2">
+          <div class="field">
+            <label>Blood Group <span>*</span></label>
+            <div class="input-wrap">
+              <i class="fas fa-tint"></i>
+              <select name="bloodgroup">
+                <option disabled selected>Choose blood group</option>
+                <option>O+</option>
+                <option>O-</option>
+                <option>A+</option>
+                <option>A-</option>
+                <option>B+</option>
+                <option>B-</option>
+                <option>AB+</option>
+                <option>AB-</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label>Unit (in ml) <span>*</span></label>
+            <div class="input-wrap">
+              <i class="fas fa-flask"></i>
+              {% render_field request_form.unit placeholder="e.g. 250" class="input--style-5" %}
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-submit" type="submit">
+          <i class="fas fa-paper-plane"></i> Submit Request
+        </button>
+
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock content %}

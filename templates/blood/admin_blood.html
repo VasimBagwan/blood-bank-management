@@ -1,0 +1,140 @@
+{% extends 'blood/adminbase.html' %}
+{% load widget_tweaks %}
+{% block content %}
+
+<style>
+  .page-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.8rem;flex-wrap:wrap;gap:1rem}
+  .page-head h2{font-size:1.2rem;font-weight:700;color:#fff;margin:0}
+  .page-head p{font-size:.76rem;color:rgba(255,255,255,.3);margin:.2rem 0 0}
+  .sec-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.14em;color:rgba(255,255,255,.22);font-weight:600;margin:0 0 .9rem;display:flex;align-items:center;gap:.5rem}
+  .sec-label::after{content:'';flex:1;height:1px;background:rgba(200,0,20,.15)}
+
+  /* ── BLOOD GRID ── */
+  .blood-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem}
+  .blood-card{background:rgba(18,0,0,0.93);border:1px solid rgba(200,0,20,.22);border-radius:14px;padding:1.4rem 1.2rem;position:relative;overflow:hidden;transition:all .25s;cursor:default}
+  .blood-card::before{content:'';position:absolute;top:-18px;right:-18px;width:70px;height:70px;background:rgba(200,0,20,.07);border-radius:50%;transition:all .3s}
+  .blood-card:hover{border-color:rgba(200,0,20,.5);transform:translateY(-3px);box-shadow:0 10px 30px rgba(200,0,20,.18)}
+  .blood-card:hover::before{background:rgba(200,0,20,.13);transform:scale(1.3)}
+  .blood-card.neg{border-color:rgba(200,0,20,.15)}
+  .blood-card.neg .blood-type{color:rgba(255,200,200,.9)}
+
+  .blood-type{font-size:1.5rem;font-weight:800;color:#fff;display:flex;align-items:center;gap:.4rem;margin-bottom:.6rem}
+  .blood-type i{color:#cc0015;font-size:1.1rem;animation:drip 2.2s ease-in-out infinite}
+  @keyframes drip{0%,100%{transform:translateY(0);opacity:1}50%{transform:translateY(3px);opacity:.7}}
+
+  .blood-unit{font-size:.75rem;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.08em}
+  .blood-unit strong{display:block;font-size:1.15rem;color:rgba(255,255,255,.82);font-weight:700;margin-top:.15rem;text-transform:none;letter-spacing:0}
+
+  /* ── UPDATE FORM ── */
+  .update-card{background:rgba(18,0,0,0.93);border:1px solid rgba(200,0,20,.22);border-radius:16px;padding:2rem;margin-top:.5rem}
+  .update-card h3{font-size:1rem;font-weight:700;color:#fff;margin-bottom:1.5rem;display:flex;align-items:center;gap:.6rem}
+  .update-card h3 i{color:#cc0015}
+
+  .form-row-custom{display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-end}
+
+  .form-field{display:flex;flex-direction:column;gap:.45rem;flex:1;min-width:160px}
+  .form-field label{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.4);font-weight:600}
+
+  .dark-select,.dark-input{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(200,0,20,.22);border-radius:10px;padding:.75rem 1rem;color:#fff;font-size:.9rem;outline:none;transition:all .25s;font-family:'Segoe UI',sans-serif;appearance:none;-webkit-appearance:none}
+  .dark-select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%23ff4455' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:2.5rem}
+  .dark-select option{background:#1a0000;color:#fff}
+  .dark-select:focus,.dark-input:focus{border-color:#cc0015;background:rgba(200,0,20,.08);box-shadow:0 0 0 3px rgba(200,0,20,.12)}
+  .dark-input::placeholder{color:rgba(255,255,255,.2)}
+
+  .btn-update{background:#cc0015;color:#fff;border:none;border-radius:10px;padding:.78rem 2rem;font-size:.92rem;font-weight:700;cursor:pointer;transition:all .25s;box-shadow:0 4px 18px rgba(200,0,20,.4);white-space:nowrap;display:inline-flex;align-items:center;gap:.5rem;flex-shrink:0}
+  .btn-update:hover{background:#ff1a2a;transform:translateY(-2px);box-shadow:0 8px 26px rgba(200,0,20,.6)}
+
+  @media(max-width:900px){.blood-grid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:560px){
+    .blood-grid{grid-template-columns:repeat(2,1fr)}
+    .form-row-custom{flex-direction:column}
+    .btn-update{width:100%;justify-content:center}
+  }
+</style>
+
+<!-- PAGE HEADER -->
+<div class="page-head">
+  <div>
+    <div class="sec-label" style="margin-bottom:.4rem">
+      <i class="fas fa-hand-holding-water" style="color:#cc0015"></i> Inventory
+    </div>
+    <h2>Blood Stock</h2>
+    <p>Current blood inventory levels and stock management</p>
+  </div>
+</div>
+
+<!-- POSITIVE BLOOD TYPES -->
+<p class="sec-label"><i class="fas fa-tint" style="color:#cc0015"></i> Positive Blood Groups</p>
+<div class="blood-grid">
+  <div class="blood-card">
+    <div class="blood-type">A+ <i class="fas fa-tint"></i></div>
+    <div class="blood-unit">Units Available<strong>{{A1.unit}} ml</strong></div>
+  </div>
+  <div class="blood-card">
+    <div class="blood-type">B+ <i class="fas fa-tint"></i></div>
+    <div class="blood-unit">Units Available<strong>{{B1.unit}} ml</strong></div>
+  </div>
+  <div class="blood-card">
+    <div class="blood-type">O+ <i class="fas fa-tint"></i></div>
+    <div class="blood-unit">Units Available<strong>{{O1.unit}} ml</strong></div>
+  </div>
+  <div class="blood-card">
+    <div class="blood-type">AB+ <i class="fas fa-tint"></i></div>
+    <div class="blood-unit">Units Available<strong>{{AB1.unit}} ml</strong></div>
+  </div>
+</div>
+
+<!-- NEGATIVE BLOOD TYPES -->
+<p class="sec-label"><i class="fas fa-tint" style="color:#880010"></i> Negative Blood Groups</p>
+<div class="blood-grid">
+  <div class="blood-card neg">
+    <div class="blood-type">A- <i class="fas fa-tint"></i></div>
+    <div class="blood-unit">Units Available<strong>{{A2.unit}} ml</strong></div>
+  </div>
+  <div class="blood-card neg">
+    <div class="blood-type">B- <i class="fas fa-tint"></i></div>
+    <div class="blood-unit">Units Available<strong>{{B2.unit}} ml</strong></div>
+  </div>
+  <div class="blood-card neg">
+    <div class="blood-type">O- <i class="fas fa-tint"></i></div>
+    <div class="blood-unit">Units Available<strong>{{O2.unit}} ml</strong></div>
+  </div>
+  <div class="blood-card neg">
+    <div class="blood-type">AB- <i class="fas fa-tint"></i></div>
+    <div class="blood-unit">Units Available<strong>{{AB2.unit}} ml</strong></div>
+  </div>
+</div>
+
+<!-- UPDATE FORM -->
+<p class="sec-label"><i class="fas fa-edit" style="color:#cc0015"></i> Update Stock</p>
+<div class="update-card">
+  <h3><i class="fas fa-hand-holding-water"></i> Update Blood Unit</h3>
+  <form method="POST">
+    {% csrf_token %}
+    <div class="form-row-custom">
+      <div class="form-field">
+        <label>Blood Group</label>
+        <select name="bloodgroup" class="dark-select" required>
+          <option value="" disabled selected>Choose Blood Group</option>
+          <option>O+</option>
+          <option>O-</option>
+          <option>A+</option>
+          <option>A-</option>
+          <option>B+</option>
+          <option>B-</option>
+          <option>AB+</option>
+          <option>AB-</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Unit (ml)</label>
+        <input type="number" name="unit" class="dark-input" placeholder="Enter unit in ml" min="0" required>
+      </div>
+      <button type="submit" class="btn-update">
+        <i class="fas fa-save"></i> Update Stock
+      </button>
+    </div>
+  </form>
+</div>
+
+{% endblock content %}

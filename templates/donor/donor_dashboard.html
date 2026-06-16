@@ -1,0 +1,121 @@
+{% extends 'donor/donorbase.html' %}
+{% block content %}
+
+<style>
+  .welcome-strip{background:rgba(18,0,0,0.93);border:1px solid rgba(200,0,20,0.22);border-radius:14px;padding:1.4rem 1.8rem;margin-bottom:2rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+  .welcome-strip h2{font-size:1.2rem;font-weight:700;color:#fff;margin:0}
+  .welcome-strip p{font-size:.78rem;color:rgba(255,255,255,.3);margin:.2rem 0 0}
+  .welcome-strip .icon{width:46px;height:46px;background:rgba(200,0,20,.15);border:1px solid rgba(200,0,20,.3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:#ff4455;animation:hb 1.6s ease-in-out infinite}
+  @keyframes hb{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+
+  .sec-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.14em;color:rgba(255,255,255,.22);font-weight:600;margin:0 0 .9rem;display:flex;align-items:center;gap:.5rem}
+  .sec-label::after{content:'';flex:1;height:1px;background:rgba(200,0,20,.15)}
+
+  .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem}
+  .stat-card{background:rgba(18,0,0,0.93);border:1px solid rgba(200,0,20,0.22);border-radius:14px;padding:1.4rem 1.3rem;display:flex;align-items:center;gap:1.1rem;transition:all .25s;position:relative;overflow:hidden}
+  .stat-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#cc0015,transparent);opacity:0;transition:opacity .25s}
+  .stat-card:hover{border-color:rgba(200,0,20,.45);transform:translateY(-3px);box-shadow:0 10px 30px rgba(200,0,20,.15)}
+  .stat-card:hover::after{opacity:1}
+  .stat-icon{width:48px;height:48px;background:rgba(200,0,20,.12);border:1px solid rgba(200,0,20,.25);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:#ff4455;flex-shrink:0}
+  .stat-info{flex:1;min-width:0}
+  .stat-value{font-size:1.7rem;font-weight:800;color:#fff;line-height:1;margin-bottom:.25rem}
+  .stat-label{font-size:.7rem;color:rgba(255,255,255,.38);text-transform:uppercase;letter-spacing:.09em}
+
+  .nav-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem}
+  .nav-card{background:rgba(18,0,0,0.93);border:1px solid rgba(200,0,20,0.2);border-radius:14px;padding:1.4rem 1.3rem;display:flex;align-items:center;gap:1rem;text-decoration:none;transition:all .25s;position:relative;overflow:hidden}
+  .nav-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:#cc0015;opacity:0;transition:opacity .2s}
+  .nav-card:hover{border-color:rgba(200,0,20,.45);background:rgba(30,0,0,.97);transform:translateX(4px);box-shadow:0 8px 28px rgba(200,0,20,.15)}
+  .nav-card:hover::before{opacity:1}
+  .nav-card-icon{width:44px;height:44px;background:rgba(200,0,20,.12);border:1px solid rgba(200,0,20,.22);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1rem;color:#ff4455;flex-shrink:0;transition:all .25s}
+  .nav-card:hover .nav-card-icon{background:rgba(200,0,20,.22);color:#ff6677}
+  .nav-card-info h4{font-size:.9rem;font-weight:700;color:#fff;margin:0 0 .15rem}
+  .nav-card-info p{font-size:.72rem;color:rgba(255,255,255,.3);margin:0}
+  .nav-card-arrow{margin-left:auto;color:rgba(200,0,20,.4);font-size:.75rem;transition:all .2s}
+  .nav-card:hover .nav-card-arrow{color:#ff4455;transform:translateX(3px)}
+
+  @media(max-width:768px){
+    .stat-grid{grid-template-columns:repeat(2,1fr)}
+    .nav-grid{grid-template-columns:1fr}
+  }
+</style>
+
+<!-- WELCOME -->
+<div class="welcome-strip">
+  <div>
+    <h2>Welcome, Donor 🩸</h2>
+    <p>Thank you for saving lives. Here is your overview.</p>
+  </div>
+  <div class="icon"><i class="fas fa-tint"></i></div>
+</div>
+
+<!-- STATS -->
+<p class="sec-label"><i class="fas fa-chart-bar" style="color:#cc0015"></i> Overview</p>
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="stat-icon"><i class="fas fa-sync-alt"></i></div>
+    <div class="stat-info">
+      <div class="stat-value">{{requestmade}}</div>
+      <div class="stat-label">Requests Made</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon"><i class="fas fa-clock"></i></div>
+    <div class="stat-info">
+      <div class="stat-value">{{requestpending}}</div>
+      <div class="stat-label">Pending</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+    <div class="stat-info">
+      <div class="stat-value">{{requestapproved}}</div>
+      <div class="stat-label">Approved</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon"><i class="fas fa-times-circle"></i></div>
+    <div class="stat-info">
+      <div class="stat-value">{{requestrejected}}</div>
+      <div class="stat-label">Rejected</div>
+    </div>
+  </div>
+</div>
+
+<!-- QUICK NAV -->
+<p class="sec-label"><i class="fas fa-th" style="color:#cc0015"></i> Quick Access</p>
+<div class="nav-grid">
+  <a href="/donor/donate-blood" class="nav-card">
+    <div class="nav-card-icon"><i class="fas fa-hand-holding-medical"></i></div>
+    <div class="nav-card-info">
+      <h4>Donate Blood</h4>
+      <p>Submit a new blood donation</p>
+    </div>
+    <i class="fas fa-chevron-right nav-card-arrow"></i>
+  </a>
+  <a href="/donor/donation-history" class="nav-card">
+    <div class="nav-card-icon"><i class="fas fa-history"></i></div>
+    <div class="nav-card-info">
+      <h4>Donation History</h4>
+      <p>View all your past donations</p>
+    </div>
+    <i class="fas fa-chevron-right nav-card-arrow"></i>
+  </a>
+  <a href="/donor/make-request" class="nav-card">
+    <div class="nav-card-icon"><i class="fas fa-sync-alt"></i></div>
+    <div class="nav-card-info">
+      <h4>Make Request</h4>
+      <p>Request blood for someone in need</p>
+    </div>
+    <i class="fas fa-chevron-right nav-card-arrow"></i>
+  </a>
+  <a href="/donor/request-history" class="nav-card">
+    <div class="nav-card-icon"><i class="fas fa-history"></i></div>
+    <div class="nav-card-info">
+      <h4>Request History</h4>
+      <p>Track all your blood requests</p>
+    </div>
+    <i class="fas fa-chevron-right nav-card-arrow"></i>
+  </a>
+</div>
+
+{% endblock content %}

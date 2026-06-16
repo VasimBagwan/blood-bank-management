@@ -1,0 +1,134 @@
+{% extends 'patient/patientbase.html' %}
+{% load static %}
+{% load widget_tweaks %}
+{% block content %}
+
+<style>
+  .page-head{margin-bottom:1.8rem}
+  .page-head h2{font-size:1.2rem;font-weight:700;color:#fff;margin:0}
+  .page-head p{font-size:.76rem;color:rgba(255,255,255,.3);margin:.2rem 0 0}
+  .sec-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.14em;color:rgba(255,255,255,.22);font-weight:600;margin:0 0 .9rem;display:flex;align-items:center;gap:.5rem}
+  .sec-label::after{content:'';flex:1;height:1px;background:rgba(200,0,20,.15)}
+
+  .form-card{background:rgba(18,0,0,0.93);border:1px solid rgba(200,0,20,.22);border-radius:16px;overflow:hidden;max-width:580px}
+  .form-card-head{background:linear-gradient(135deg,#cc0015,#8b0010);padding:1.5rem 1.8rem;display:flex;align-items:center;gap:1rem;position:relative;overflow:hidden}
+  .form-card-head::before{content:'';position:absolute;top:-20px;right:-20px;width:80px;height:80px;background:rgba(255,255,255,.06);border-radius:50%}
+  .form-card-head::after{content:'';position:absolute;bottom:-15px;left:-15px;width:55px;height:55px;background:rgba(255,255,255,.04);border-radius:50%}
+  .head-icon{width:46px;height:46px;background:rgba(255,255,255,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:#fff;flex-shrink:0;position:relative;z-index:1}
+  .form-card-head h3{color:#fff;font-size:1.1rem;font-weight:700;margin:0;position:relative;z-index:1}
+  .form-card-head p{color:rgba(255,255,255,.6);font-size:.78rem;margin:.15rem 0 0;position:relative;z-index:1}
+
+  .form-body{padding:2rem}
+  .field-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem}
+  .field-full{grid-column:1/-1}
+  .field{display:flex;flex-direction:column;gap:.42rem}
+  .field label{font-size:.7rem;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.4);font-weight:600;display:flex;align-items:center;gap:.4rem}
+  .field label i{color:rgba(200,0,20,.5);font-size:.75rem}
+
+  .field input,.field select,.field textarea{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(200,0,20,.22);border-radius:10px;padding:.75rem 1rem;color:#fff;font-size:.9rem;outline:none;transition:all .25s;font-family:'Segoe UI',sans-serif;appearance:none;-webkit-appearance:none}
+  .field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%23ff4455' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:2.5rem;background-color:rgba(255,255,255,.05)}
+  .field select option{background:#1a0000;color:#fff}
+  .field input:focus,.field select:focus,.field textarea:focus{border-color:#cc0015;background:rgba(200,0,20,.08);box-shadow:0 0 0 3px rgba(200,0,20,.12)}
+  .field input::placeholder,.field textarea::placeholder{color:rgba(255,255,255,.2)}
+
+  .form-divider{height:1px;background:rgba(200,0,20,.12);margin:1.5rem 0}
+
+  .form-actions{display:flex;gap:.8rem;flex-wrap:wrap}
+  .btn-request{display:inline-flex;align-items:center;gap:.5rem;background:#cc0015;color:#fff;border:none;border-radius:10px;padding:.82rem 2rem;font-size:.95rem;font-weight:700;cursor:pointer;transition:all .25s;box-shadow:0 4px 18px rgba(200,0,20,.4)}
+  .btn-request:hover{background:#ff1a2a;transform:translateY(-2px);box-shadow:0 8px 26px rgba(200,0,20,.6)}
+  .btn-cancel{display:inline-flex;align-items:center;gap:.5rem;background:transparent;color:rgba(255,255,255,.45);border:1px solid rgba(200,0,20,.2);border-radius:10px;padding:.82rem 1.6rem;font-size:.92rem;font-weight:600;cursor:pointer;transition:all .25s;text-decoration:none}
+  .btn-cancel:hover{border-color:rgba(200,0,20,.45);color:rgba(255,255,255,.75);text-decoration:none}
+
+  /* info box */
+  .info-box{background:rgba(200,0,20,.08);border:1px solid rgba(200,0,20,.2);border-radius:10px;padding:.9rem 1.1rem;margin-bottom:1.5rem;display:flex;align-items:flex-start;gap:.7rem}
+  .info-box i{color:#ff4455;margin-top:.1rem;flex-shrink:0}
+  .info-box p{color:rgba(255,255,255,.45);font-size:.8rem;line-height:1.6;margin:0}
+
+  @media(max-width:560px){
+    .field-grid{grid-template-columns:1fr}
+    .field-full{grid-column:auto}
+    .form-body{padding:1.3rem}
+    .form-card{max-width:100%}
+  }
+</style>
+
+<!-- PAGE HEADER -->
+<div class="page-head">
+  <div class="sec-label" style="margin-bottom:.4rem">
+    <i class="fas fa-sync-alt" style="color:#cc0015"></i> Patient &rsaquo; Make Request
+  </div>
+  <h2>Make Blood Request</h2>
+  <p>Submit a new blood request for your treatment</p>
+</div>
+
+<!-- FORM CARD -->
+<div class="form-card">
+  <div class="form-card-head">
+    <div class="head-icon"><i class="fas fa-tint"></i></div>
+    <div>
+      <h3>Blood Request Form</h3>
+      <p>Fill in the details to request blood</p>
+    </div>
+  </div>
+
+  <div class="form-body">
+
+    <div class="info-box">
+      <i class="fas fa-info-circle"></i>
+      <p>Your request will be reviewed by the admin. Make sure all details are correct before submitting.</p>
+    </div>
+
+    <form method="POST" autocomplete="off">
+      {% csrf_token %}
+
+      <div class="field-grid">
+
+        <div class="field field-full">
+          <label><i class="fas fa-user"></i> Patient Name</label>
+          {% render_field request_form.patient_name placeholder="Full patient name" required=True %}
+        </div>
+
+        <div class="field">
+          <label><i class="fas fa-birthday-cake"></i> Patient Age</label>
+          {% render_field request_form.patient_age placeholder="Age" required=True %}
+        </div>
+
+        <div class="field">
+          <label><i class="fas fa-tint"></i> Blood Group</label>
+          <select name="bloodgroup" required>
+            <option value="" disabled selected>Choose Blood Group</option>
+            <option>O+</option><option>O-</option>
+            <option>A+</option><option>A-</option>
+            <option>B+</option><option>B-</option>
+            <option>AB+</option><option>AB-</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label><i class="fas fa-flask"></i> Unit Required (ml)</label>
+          {% render_field request_form.unit placeholder="e.g. 250" required=True %}
+        </div>
+
+        <div class="field field-full">
+          <label><i class="fas fa-notes-medical"></i> Reason for Request</label>
+          {% render_field request_form.reason placeholder="Reason for blood requirement" required=True %}
+        </div>
+
+      </div>
+
+      <div class="form-divider"></div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-request">
+          <i class="fas fa-paper-plane"></i> Submit Request
+        </button>
+        <a href="/patient/patient-dashboard" class="btn-cancel">
+          <i class="fas fa-times"></i> Cancel
+        </a>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+{% endblock content %}

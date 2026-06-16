@@ -1,0 +1,556 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Blood Bank Management</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.css">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    html,body{width:100%;overflow-x:hidden;background:#0d0000;font-family:'Segoe UI',sans-serif}
+
+    /* ── NAVBAR ── */
+    .topnav{width:100%;height:60px;background:rgba(10,0,0,0.97);border-bottom:1px solid rgba(200,0,20,0.3);display:flex;align-items:center;justify-content:space-between;padding:0 2.5rem;position:sticky;top:0;z-index:999}
+    .brand{color:#fff;font-size:16px;font-weight:600;display:flex;align-items:center;gap:10px;text-decoration:none}
+    .brand-icon{width:32px;height:32px;background:#cc0015;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;flex-shrink:0;animation:hb 1.4s ease-in-out infinite}
+    @keyframes hb{0%,100%{transform:scale(1)}14%{transform:scale(1.25)}28%{transform:scale(1)}42%{transform:scale(1.15)}}
+    .nav-links{display:flex;gap:2rem;list-style:none;margin:0;padding:0}
+    .nav-links a{color:rgba(255,255,255,0.75);text-decoration:none;font-size:14px;transition:color .2s;position:relative}
+    .nav-links a::after{content:'';position:absolute;bottom:-4px;left:0;right:0;height:1px;background:#ff2233;transform:scaleX(0);transition:transform .2s}
+    .nav-links a:hover{color:#ff4455}
+    .nav-links a:hover::after{transform:scaleX(1)}
+
+    /* ── HERO ── */
+    .hero{width:100%;min-height:calc(100vh - 60px);background:#0d0000;display:flex;align-items:center;justify-content:center;text-align:center;position:relative;overflow:hidden;cursor:crosshair}
+    canvas#bgc{position:absolute;top:0;left:0;width:100%;height:100%;display:block;z-index:1}
+
+    /* drip layer — left & right edges */
+    .drip-layer{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:2;overflow:hidden}
+    .drip{position:absolute;top:-10px;width:3px;border-radius:0 0 50% 50%;background:linear-gradient(to bottom,rgba(180,0,15,.0),rgba(180,0,15,.85));animation:dripfall linear infinite}
+    @keyframes dripfall{0%{top:-60px;opacity:0}10%{opacity:1}90%{opacity:.6}100%{top:100vh;opacity:0}}
+    .drip-blob{position:absolute;border-radius:50% 50% 45% 45%;background:rgba(160,0,10,.8);animation:blobfall linear infinite}
+    @keyframes blobfall{0%{top:-20px;opacity:0}5%{opacity:1}95%{opacity:.7}100%{top:110vh;opacity:0}}
+
+    .rip{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:4}
+    .hero-inner{position:relative;z-index:5;padding:2rem 1rem;width:100%;max-width:640px;margin:0 auto}
+
+    /* ECG line */
+    .ecg-wrap{position:absolute;bottom:70px;left:0;width:100%;z-index:3;opacity:.35;pointer-events:none}
+    .ecg-wrap svg{width:100%;height:50px;display:block}
+    .ecg-path{stroke:#cc0015;stroke-width:1.5;fill:none;stroke-dasharray:1200;stroke-dashoffset:1200;animation:ecgdraw 3s linear infinite}
+    @keyframes ecgdraw{0%{stroke-dashoffset:1200;opacity:0}5%{opacity:1}70%{stroke-dashoffset:0;opacity:1}100%{stroke-dashoffset:-1200;opacity:0}}
+
+    /* big blood drop — 3D feel */
+    .drop-anim{width:120px;height:120px;margin:0 auto 1.5rem;animation:df 3s ease-in-out infinite;position:relative}
+    @keyframes df{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-16px) scale(1.04)}}
+    .drop-anim svg{filter:drop-shadow(0 0 28px rgba(220,0,30,1)) drop-shadow(0 0 8px rgba(255,80,80,.6))}
+    /* pulse ring around drop */
+    .drop-ring{position:absolute;top:50%;left:50%;width:130px;height:130px;margin:-65px 0 0 -65px;border-radius:50%;border:2px solid rgba(200,0,20,.5);animation:pr 2s ease-out infinite}
+    .drop-ring2{position:absolute;top:50%;left:50%;width:160px;height:160px;margin:-80px 0 0 -80px;border-radius:50%;border:1px solid rgba(200,0,20,.25);animation:pr 2s ease-out .5s infinite}
+    .drop-ring3{position:absolute;top:50%;left:50%;width:195px;height:195px;margin:-97px 0 0 -97px;border-radius:50%;border:1px solid rgba(200,0,20,.12);animation:pr 2s ease-out 1s infinite}
+    @keyframes pr{0%{transform:scale(.6);opacity:.9}100%{transform:scale(1.15);opacity:0}}
+
+    .hero-inner h1{color:#fff;font-size:clamp(2rem,5vw,3.4rem);font-weight:800;line-height:1.15;margin-bottom:.8rem}
+    .hero-inner h1 .line1{display:block;animation:fadein .8s ease both}
+    .hero-inner h1 .line2{display:block;color:#ff2233;animation:fadein .8s ease .25s both;text-shadow:0 0 40px rgba(255,34,51,.5)}
+    @keyframes fadein{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+    .hero-inner p{color:rgba(255,255,255,.62);font-size:clamp(.9rem,2vw,1.05rem);max-width:500px;margin:0 auto 2rem;line-height:1.8;animation:fadein .8s ease .45s both}
+
+    .hero-btns{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;animation:fadein .8s ease .6s both}
+    .btn-r{background:#cc0015;color:#fff;padding:.78rem 2.2rem;border-radius:30px;text-decoration:none;font-weight:700;font-size:.95rem;box-shadow:0 4px 22px rgba(200,0,20,.6),0 0 0 0 rgba(200,0,20,.4);transition:all .25s;display:inline-flex;align-items:center;gap:.5rem;animation:pulse-btn 2s ease-in-out infinite}
+    @keyframes pulse-btn{0%,100%{box-shadow:0 4px 22px rgba(200,0,20,.6),0 0 0 0 rgba(200,0,20,.4)}50%{box-shadow:0 4px 22px rgba(200,0,20,.6),0 0 0 10px rgba(200,0,20,0)}}
+    .btn-r:hover{background:#ff1a2a;transform:translateY(-3px);color:#fff;text-decoration:none}
+    .btn-g{background:transparent;color:#fff;padding:.78rem 2.2rem;border-radius:30px;text-decoration:none;font-weight:600;font-size:.95rem;border:1.5px solid rgba(255,255,255,.3);transition:all .25s;display:inline-flex;align-items:center;gap:.5rem}
+    .btn-g:hover{border-color:#ff2233;color:#ff4455;transform:translateY(-3px);text-decoration:none}
+
+    .hint{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.28);font-size:.65rem;letter-spacing:.14em;animation:bh 2s ease-in-out infinite;white-space:nowrap;z-index:6}
+    @keyframes bh{0%,100%{opacity:.28}50%{opacity:.75}}
+
+    /* click effects */
+    .blood-ripple{position:absolute;border-radius:50%;border:2px solid rgba(200,0,20,.75);animation:ro .9s ease-out forwards;pointer-events:none}
+    @keyframes ro{0%{width:0;height:0;opacity:1;margin:0}100%{width:160px;height:160px;opacity:0;margin:-80px}}
+    @keyframes sf{0%{opacity:1;transform:scale(.15)}100%{opacity:0;transform:scale(1.4)}}
+
+    /* blood pool at bottom of hero */
+    .pool{position:absolute;bottom:0;left:0;width:100%;z-index:3;pointer-events:none}
+    .pool svg{display:block;width:100%}
+
+    /* ── STATS ── */
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid rgba(200,0,20,.2);position:relative;overflow:hidden}
+    .stats::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#cc0015,transparent)}
+    .stat{text-align:center;padding:1.6rem .5rem;background:#120000;border-right:1px solid rgba(200,0,20,.12);position:relative;overflow:hidden;transition:background .3s}
+    .stat:hover{background:#1a0000}
+    .stat::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:#cc0015;transform:scaleX(0);transition:transform .4s}
+    .stat:hover::after{transform:scaleX(1)}
+    .stat:last-child{border-right:none}
+    .stat strong{display:block;font-size:clamp(1.4rem,3vw,2rem);font-weight:700;color:#ff3344;font-variant-numeric:tabular-nums}
+    .stat span{font-size:.65rem;text-transform:uppercase;letter-spacing:.09em;color:rgba(255,255,255,.35);display:block;margin-top:.2rem}
+    .stat-ico{font-size:1.2rem;color:rgba(200,0,20,.3);margin-bottom:.3rem;display:block}
+
+    /* ── CARDS ── */
+    .sec{padding:4rem 5% 3.5rem;background:#0d0000;position:relative;overflow:hidden}
+    .sec::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:1px;height:100%;background:linear-gradient(to bottom,rgba(200,0,20,.15),transparent)}
+    .sec-t{text-align:center;color:#fff;font-size:clamp(1.2rem,3vw,1.6rem);font-weight:700;margin-bottom:.4rem}
+    .sec-s{text-align:center;color:rgba(255,255,255,.35);font-size:.85rem;margin-bottom:2.5rem}
+    .cgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;max-width:980px;margin:0 auto}
+    .fc{background:#180000;border:1px solid rgba(200,0,20,.22);border-radius:18px;padding:2.2rem 1.6rem;text-align:center;transition:all .35s;position:relative;overflow:hidden}
+    .fc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#cc0015,transparent);transform:scaleX(0);transition:transform .45s}
+    .fc::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 0%,rgba(200,0,20,.08),transparent 65%);opacity:0;transition:opacity .35s}
+    .fc:hover::before{transform:scaleX(1)}
+    .fc:hover::after{opacity:1}
+    .fc:hover{border-color:rgba(200,0,20,.55);transform:translateY(-9px);background:#1e0000;box-shadow:0 16px 40px rgba(200,0,20,.22)}
+    .fc-ico-wrap{width:70px;height:70px;background:rgba(200,0,20,.1);border:1px solid rgba(200,0,20,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.2rem;transition:all .35s;position:relative;z-index:1}
+    .fc:hover .fc-ico-wrap{background:rgba(200,0,20,.2);border-color:rgba(200,0,20,.45);transform:scale(1.1)}
+    .fc .ico{font-size:1.8rem;display:block}
+    .fc h3{color:#fff;font-size:1.05rem;font-weight:700;margin-bottom:.5rem;position:relative;z-index:1}
+    .fc p{color:rgba(255,255,255,.45);font-size:.83rem;line-height:1.75;margin:0;position:relative;z-index:1}
+    .fc a{display:inline-block;margin-top:1rem;color:#ff3344;font-size:.78rem;border:1px solid rgba(200,0,20,.38);padding:.35rem 1rem;border-radius:20px;text-decoration:none;transition:all .2s;position:relative;z-index:1}
+    .fc:hover a{background:#cc0015;color:#fff;border-color:#cc0015}
+
+    /* ── HOW IT WORKS ── */
+    .how{padding:3.5rem 5% 3rem;background:#0a0000;text-align:center;position:relative;overflow:hidden}
+    .how::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(200,0,20,.35),transparent)}
+    .srow{display:flex;align-items:flex-start;justify-content:center;max-width:860px;margin:0 auto;gap:0;position:relative}
+    .srow::before{content:'';position:absolute;top:22px;left:10%;right:10%;height:2px;background:linear-gradient(90deg,rgba(200,0,20,.0),rgba(200,0,20,.35),rgba(200,0,20,.0))}
+    .si{flex:1;text-align:center;padding:.5rem;position:relative}
+    .sn{width:46px;height:46px;background:#cc0015;border-radius:50%;color:#fff;font-weight:700;font-size:1rem;display:flex;align-items:center;justify-content:center;margin:0 auto .8rem;box-shadow:0 0 20px rgba(200,0,20,.55);position:relative;z-index:1;animation:sn-pulse 2s ease-in-out infinite}
+    .si:nth-child(2) .sn{animation-delay:.25s}
+    .si:nth-child(3) .sn{animation-delay:.5s}
+    .si:nth-child(4) .sn{animation-delay:.75s}
+    @keyframes sn-pulse{0%,100%{box-shadow:0 0 20px rgba(200,0,20,.55)}50%{box-shadow:0 0 30px rgba(200,0,20,.9),0 0 0 6px rgba(200,0,20,.12)}}
+    .si h4{color:#fff;font-size:.9rem;font-weight:700;margin-bottom:.3rem}
+    .si p{color:rgba(255,255,255,.38);font-size:.75rem;line-height:1.55}
+
+    /* ── BLOOD TYPES ── */
+    .bt{background:#120000;padding:2.5rem 5%;text-align:center;border-top:1px solid rgba(200,0,20,.15);position:relative;overflow:hidden}
+    .bt h3{color:rgba(255,255,255,.38);font-size:.68rem;text-transform:uppercase;letter-spacing:.15em;margin-bottom:1.5rem}
+    .brow{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
+    .bb{background:#1e0000;border:1px solid rgba(200,0,20,.32);color:#ff3344;font-weight:700;font-size:.9rem;width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all .28s;cursor:default;position:relative;overflow:hidden}
+    .bb::after{content:'';position:absolute;inset:0;background:rgba(200,0,20,0);border-radius:50%;transition:background .28s}
+    .bb:hover{color:#fff;transform:scale(1.22) translateY(-4px);box-shadow:0 6px 24px rgba(200,0,20,.6)}
+    .bb:hover::after{background:rgba(200,0,20,.85)}
+    .bb span{position:relative;z-index:1}
+
+    /* ── URGENCY BANNER ── */
+    .urgent{background:linear-gradient(135deg,#1a0000,#2a0005);border-top:1px solid rgba(200,0,20,.3);border-bottom:1px solid rgba(200,0,20,.3);padding:1.8rem 5%;display:flex;align-items:center;justify-content:center;gap:2rem;flex-wrap:wrap;text-align:center}
+    .urgent-ico{width:52px;height:52px;background:#cc0015;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;animation:hb 1s ease-in-out infinite}
+    .urgent h3{color:#fff;font-size:1rem;font-weight:700;margin-bottom:.2rem}
+    .urgent p{color:rgba(255,255,255,.45);font-size:.82rem;margin:0}
+    .urgent .btn-r{animation:none;font-size:.85rem;padding:.6rem 1.5rem}
+
+    /* ── QUOTE ── */
+    .qs{background:#0d0000;padding:3rem 5%;text-align:center;border-top:1px solid rgba(200,0,20,.12);position:relative;overflow:hidden}
+    .qs::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:1px;height:100%;background:linear-gradient(to bottom,rgba(200,0,20,.12),transparent)}
+    .qs blockquote{color:rgba(255,255,255,.62);font-size:clamp(.92rem,2vw,1.1rem);font-style:italic;max-width:600px;margin:0 auto .8rem;line-height:2}
+    .qs blockquote::before{content:'\201C';font-size:3.5rem;color:rgba(200,0,20,.4);line-height:0;vertical-align:-1.2rem;margin-right:6px}
+    .qs cite{color:#ff3344;font-size:.82rem}
+
+    /* ── FOOTER ── */
+    .ft{background:#0a0000;border-top:1px solid rgba(200,0,20,.2);color:rgba(255,255,255,.35);text-align:center;padding:1.5rem;font-size:.8rem}
+    .ft span{color:#ff3344}
+    .ft-hb{display:inline-block;color:#cc0015;animation:hb 1.4s ease-in-out infinite;margin:0 3px}
+
+    /* scroll reveal */
+    .reveal{opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s ease}
+    .reveal.visible{opacity:1;transform:translateY(0)}
+
+    /* ── RESPONSIVE ── */
+    @media(max-width:900px){.cgrid{grid-template-columns:1fr}.srow{flex-wrap:wrap}.si{min-width:45%}.srow::before{display:none}}
+    @media(max-width:600px){
+      .stats{grid-template-columns:repeat(2,1fr)}
+      .stat:nth-child(2){border-right:none}
+      .stat:nth-child(3){border-right:1px solid rgba(200,0,20,.12)}
+      .topnav{padding:0 1rem}.nav-links{gap:1rem}.nav-links a{font-size:12px}
+      .hero-btns{flex-direction:column;align-items:center}
+      .si{min-width:48%}
+      .urgent{flex-direction:column;gap:1rem}
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="topnav">
+  <a href="/" class="brand">
+    <div class="brand-icon"><i class="fas fa-heartbeat" style="font-size:12px"></i></div>
+    Blood Bank Management
+  </a>
+  <ul class="nav-links">
+    <li><a href="/"><i class="fas fa-home" style="font-size:12px;margin-right:4px"></i>Home</a></li>
+    <li><a href="/patient/patientlogin"><i class="fas fa-procedures" style="font-size:12px;margin-right:4px"></i>Patient</a></li>
+    <li><a href="/donor/donorlogin"><i class="fas fa-user" style="font-size:12px;margin-right:4px"></i>Donor</a></li>
+    <li><a href="/adminlogin"><i class="fas fa-user-shield" style="font-size:12px;margin-right:4px"></i>Admin</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <canvas id="bgc"></canvas>
+
+  <!-- drip layer -->
+  <div class="drip-layer" id="dripLayer"></div>
+
+  <div class="rip" id="rip"></div>
+
+  <!-- ECG line -->
+  <div class="ecg-wrap">
+    <svg viewBox="0 0 1200 50" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path class="ecg-path" d="M0,25 L100,25 L120,25 L130,5 L140,45 L155,10 L165,25 L200,25 L300,25 L320,25 L330,5 L340,45 L355,10 L365,25 L400,25 L500,25 L520,25 L530,5 L540,45 L555,10 L565,25 L600,25 L700,25 L720,25 L730,5 L740,45 L755,10 L765,25 L800,25 L900,25 L920,25 L930,5 L940,45 L955,10 L965,25 L1000,25 L1100,25 L1120,25 L1130,5 L1140,45 L1155,10 L1165,25 L1200,25"/>
+    </svg>
+  </div>
+
+  <!-- blood pool wave at bottom -->
+  <div class="pool">
+    <svg viewBox="0 0 1440 60" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+      <path d="M0,30 C240,60 480,0 720,30 C960,60 1200,0 1440,30 L1440,60 L0,60 Z" fill="rgba(120,0,10,0.35)">
+        <animate attributeName="d" dur="4s" repeatCount="indefinite"
+          values="M0,30 C240,60 480,0 720,30 C960,60 1200,0 1440,30 L1440,60 L0,60 Z;
+                  M0,20 C240,0 480,60 720,20 C960,0 1200,60 1440,20 L1440,60 L0,60 Z;
+                  M0,30 C240,60 480,0 720,30 C960,60 1200,0 1440,30 L1440,60 L0,60 Z"/>
+      </path>
+      <path d="M0,40 C360,60 720,20 1080,40 C1260,50 1380,35 1440,40 L1440,60 L0,60 Z" fill="rgba(80,0,5,0.5)">
+        <animate attributeName="d" dur="6s" repeatCount="indefinite"
+          values="M0,40 C360,60 720,20 1080,40 C1260,50 1380,35 1440,40 L1440,60 L0,60 Z;
+                  M0,35 C360,15 720,55 1080,35 C1260,25 1380,45 1440,35 L1440,60 L0,60 Z;
+                  M0,40 C360,60 720,20 1080,40 C1260,50 1380,35 1440,40 L1440,60 L0,60 Z"/>
+      </path>
+    </svg>
+  </div>
+
+  <div class="hero-inner">
+    <div class="drop-anim" style="position:relative">
+      <div class="drop-ring"></div>
+      <div class="drop-ring2"></div>
+      <div class="drop-ring3"></div>
+      <svg viewBox="0 0 80 90" xmlns="http://www.w3.org/2000/svg" style="position:relative;z-index:2">
+        <defs>
+          <radialGradient id="dg" cx="35%" cy="28%">
+            <stop offset="0%" stop-color="#ff8888"/>
+            <stop offset="40%" stop-color="#ff2233"/>
+            <stop offset="75%" stop-color="#cc0015"/>
+            <stop offset="100%" stop-color="#6a0008"/>
+          </radialGradient>
+          <radialGradient id="shine" cx="30%" cy="25%">
+            <stop offset="0%" stop-color="rgba(255,255,255,0.35)"/>
+            <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+          </radialGradient>
+        </defs>
+        <path d="M40 5 C40 5 8 42 8 58 C8 76 22 88 40 88 C58 88 72 76 72 58 C72 42 40 5 40 5Z" fill="url(#dg)"/>
+        <path d="M40 5 C40 5 8 42 8 58 C8 76 22 88 40 88 C58 88 72 76 72 58 C72 42 40 5 40 5Z" fill="url(#shine)"/>
+        <ellipse cx="29" cy="42" rx="7" ry="12" fill="rgba(255,255,255,0.18)" transform="rotate(-22,29,42)"/>
+        <ellipse cx="38" cy="30" rx="3" ry="5" fill="rgba(255,255,255,0.12)" transform="rotate(-15,38,30)"/>
+      </svg>
+    </div>
+
+    <h1>
+      <span class="line1">Donate Blood,</span>
+      <span class="line2">Save Lives</span>
+    </h1>
+    <p>Every single drop matters. Join thousands of heroes making a real difference in people's lives every single day.</p>
+    <div class="hero-btns">
+      <a href="/donor/donorlogin" class="btn-r"><i class="fas fa-tint"></i> Donate Now</a>
+      <a href="/patient/patientlogin" class="btn-g"><i class="fas fa-hand-holding-medical"></i> Request Blood</a>
+    </div>
+  </div>
+  <div class="hint">&#9670; CLICK ANYWHERE FOR BLOOD EFFECT &#9670;</div>
+</section>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat"><span class="stat-ico"><i class="fas fa-tint"></i></span><strong id="s1">0</strong><span>Donations</span></div>
+  <div class="stat"><span class="stat-ico"><i class="fas fa-heart"></i></span><strong id="s2">0</strong><span>Lives Saved</span></div>
+  <div class="stat"><span class="stat-ico"><i class="fas fa-users"></i></span><strong id="s3">0</strong><span>Active Donors</span></div>
+  <div class="stat"><span class="stat-ico"><i class="fas fa-check-circle"></i></span><strong id="s4">0</strong><span>Requests Fulfilled</span></div>
+</div>
+
+<!-- CARDS -->
+<section class="sec reveal">
+  <h2 class="sec-t">What can you do here?</h2>
+  <p class="sec-s">A complete blood bank management platform</p>
+  <div class="cgrid">
+    <div class="fc">
+      <div class="fc-ico-wrap"><span class="ico">🏥</span></div>
+      <h3>For Patients</h3>
+      <p>Request blood quickly and track your request status in real time with live updates.</p>
+      <a href="/patient/patientlogin">Login as Patient →</a>
+    </div>
+    <div class="fc">
+      <div class="fc-ico-wrap"><span class="ico">💉</span></div>
+      <h3>For Donors</h3>
+      <p>Register, schedule donations, and view your complete donation history anytime.</p>
+      <a href="/donor/donorlogin">Login as Donor →</a>
+    </div>
+    <div class="fc">
+      <div class="fc-ico-wrap"><span class="ico">🛡️</span></div>
+      <h3>For Admins</h3>
+      <p>Manage inventory, approve requests, and oversee all records from one dashboard.</p>
+      <a href="/adminlogin">Admin Panel →</a>
+    </div>
+  </div>
+</section>
+
+<!-- URGENCY BANNER -->
+<div class="urgent reveal">
+  <div class="urgent-ico"><i class="fas fa-exclamation" style="color:#fff"></i></div>
+  <div>
+    <h3>Every 2 seconds, someone needs blood</h3>
+    <p>Blood cannot be manufactured — it can only come from generous donors like you.</p>
+  </div>
+  <a href="/donor/donorlogin" class="btn-r"><i class="fas fa-tint"></i> Donate Now</a>
+</div>
+
+<!-- HOW IT WORKS -->
+<section class="how reveal">
+  <h2 class="sec-t">How it works</h2>
+  <p class="sec-s">Simple 4-step process to save a life</p>
+  <div class="srow">
+    <div class="si"><div class="sn">1</div><h4>Register</h4><p>Sign up as donor or patient</p></div>
+    <div class="si"><div class="sn">2</div><h4>Request / Donate</h4><p>Submit or schedule donation</p></div>
+    <div class="si"><div class="sn">3</div><h4>Get Matched</h4><p>Admin connects donor & patient</p></div>
+    <div class="si"><div class="sn">4</div><h4>Save a Life</h4><p>Blood reaches those in need</p></div>
+  </div>
+</section>
+
+<!-- BLOOD TYPES -->
+<div class="bt reveal">
+  <h3>All Blood Types Accepted</h3>
+  <div class="brow">
+    <div class="bb"><span>A+</span></div>
+    <div class="bb"><span>A-</span></div>
+    <div class="bb"><span>B+</span></div>
+    <div class="bb"><span>B-</span></div>
+    <div class="bb"><span>AB+</span></div>
+    <div class="bb"><span>AB-</span></div>
+    <div class="bb"><span>O+</span></div>
+    <div class="bb"><span>O-</span></div>
+  </div>
+</div>
+
+<!-- QUOTE -->
+<div class="qs reveal">
+  <blockquote>"Opportunities knock the door sometimes, so don't let it go and donate blood."</blockquote>
+  — LazyCoder
+</div>
+
+<!-- FOOTER -->
+<div class="ft">
+  Blood Bank Management System &nbsp;|&nbsp; Made with <span class="ft-hb"><i class="fas fa-heart"></i></span> in <span>India</span> &copy; 2025
+</div>
+
+<script>
+(function(){
+  /* ── CANVAS BG ── */
+  const cv=document.getElementById('bgc');
+  const cx=cv.getContext('2d');
+  const hero=document.getElementById('hero');
+  const rc=document.getElementById('rip');
+
+  function rsz(){cv.width=hero.clientWidth;cv.height=hero.clientHeight}
+  rsz();
+  window.addEventListener('resize',rsz);
+
+  const pts=Array.from({length:55},()=>({
+    x:Math.random()*window.innerWidth,
+    y:Math.random()*window.innerHeight,
+    r:Math.random()*3.5+.8,
+    vx:(Math.random()-.5)*.5,
+    vy:(Math.random()-.5)*.5,
+    a:Math.random()*.45+.08,
+    pulse:Math.random()*Math.PI*2
+  }));
+
+  const drps=[];
+  setInterval(()=>{
+    drps.push({
+      x:Math.random()*cv.width,y:-20,
+      vy:1.2+Math.random()*2.8,
+      r:1.5+Math.random()*4,
+      a:.5+Math.random()*.4,
+      wobble:Math.random()*Math.PI*2,
+      wx:(Math.random()-.5)*.3
+    });
+  },260);
+
+  let t=0;
+  function draw(){
+    t+=.016;
+    cv.width=hero.clientWidth;
+    cv.height=hero.clientHeight;
+    cx.fillStyle='#0d0000';
+    cx.fillRect(0,0,cv.width,cv.height);
+
+    /* multi-layer glow */
+    const g=cx.createRadialGradient(cv.width/2,cv.height*.45,10,cv.width/2,cv.height*.45,cv.height*.8);
+    g.addColorStop(0,'rgba(130,0,12,.38)');
+    g.addColorStop(.5,'rgba(60,0,5,.18)');
+    g.addColorStop(1,'rgba(0,0,0,0)');
+    cx.fillStyle=g;cx.fillRect(0,0,cv.width,cv.height);
+
+    /* pulsing particles */
+    pts.forEach(p=>{
+      p.x+=p.vx;p.y+=p.vy;
+      p.pulse+=.04;
+      if(p.x<0||p.x>cv.width)p.vx*=-1;
+      if(p.y<0||p.y>cv.height)p.vy*=-1;
+      const pr=p.r*(1+.25*Math.sin(p.pulse));
+      cx.beginPath();cx.arc(p.x,p.y,pr,0,Math.PI*2);
+      cx.fillStyle='rgba(185,0,15,'+p.a+')';cx.fill();
+    });
+
+    /* falling drops with wobble */
+    for(let i=drps.length-1;i>=0;i--){
+      const d=drps[i];
+      d.y+=d.vy;
+      d.wobble+=.05;
+      d.x+=Math.sin(d.wobble)*d.wx;
+      /* teardrop shape */
+      cx.save();
+      cx.translate(d.x,d.y);
+      cx.beginPath();
+      cx.arc(0,0,d.r,0,Math.PI*2);
+      cx.fillStyle='rgba(165,0,12,'+d.a+')';
+      cx.fill();
+      cx.restore();
+      if(d.y>cv.height+15)drps.splice(i,1);
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+
+  /* ── DRIP LAYER (CSS drips on edges) ── */
+  const dl=document.getElementById('dripLayer');
+  function spawnDrip(){
+    const isBlob=Math.random()>.5;
+    const el=document.createElement('div');
+    const dur=2.5+Math.random()*4;
+    const x=Math.random()*100;
+    const w=2+Math.random()*4;
+    const h=20+Math.random()*60;
+    if(isBlob){
+      el.className='drip-blob';
+      const sz=4+Math.random()*8;
+      el.style.cssText=`left:${x}%;width:${sz}px;height:${sz*1.4}px;animation-duration:${dur}s;animation-delay:${Math.random()*2}s`;
+    } else {
+      el.className='drip';
+      el.style.cssText=`left:${x}%;width:${w}px;height:${h}px;animation-duration:${dur}s;animation-delay:${Math.random()*2}s`;
+    }
+    dl.appendChild(el);
+    setTimeout(()=>el.remove(),(dur+2)*1000);
+  }
+  setInterval(spawnDrip,350);
+  for(let i=0;i<12;i++) setTimeout(spawnDrip,i*80);
+
+  /* ── CLICK BLOOD EFFECT ── */
+  hero.addEventListener('click',function(e){
+    const rect=hero.getBoundingClientRect();
+    const x=e.clientX-rect.left,y=e.clientY-rect.top;
+
+    /* triple ripples */
+    for(let i=0;i<4;i++){
+      const el=document.createElement('div');
+      el.className='blood-ripple';
+      el.style.left=x+'px';el.style.top=y+'px';
+      el.style.animationDelay=(i*.15)+'s';
+      rc.appendChild(el);
+      setTimeout(()=>el.remove(),1200);
+    }
+
+    /* splatter SVG */
+    const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svg.setAttribute('viewBox','0 0 120 120');
+    svg.style.cssText=`position:absolute;left:${x-60}px;top:${y-60}px;width:120px;height:120px;pointer-events:none;z-index:6;animation:sf 1.2s ease-out forwards`;
+    const n=8+Math.floor(Math.random()*6);
+    for(let i=0;i<n;i++){
+      const a=(i/n)*Math.PI*2+(Math.random()*.4-.2);
+      const l=20+Math.random()*38;
+      const ln=document.createElementNS('http://www.w3.org/2000/svg','line');
+      ln.setAttribute('x1','60');ln.setAttribute('y1','60');
+      ln.setAttribute('x2',60+Math.cos(a)*l+'');
+      ln.setAttribute('y2',60+Math.sin(a)*l+'');
+      ln.setAttribute('stroke',`hsl(${345+Math.random()*15},90%,${26+Math.random()*16}%)`);
+      ln.setAttribute('stroke-width','2.8');ln.setAttribute('stroke-linecap','round');
+      svg.appendChild(ln);
+    }
+    /* drop shapes around center */
+    for(let i=0;i<5;i++){
+      const a=Math.random()*Math.PI*2;
+      const d=8+Math.random()*20;
+      const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+      c.setAttribute('cx',60+Math.cos(a)*d+'');
+      c.setAttribute('cy',60+Math.sin(a)*d+'');
+      c.setAttribute('r',2+Math.random()*4+'');
+      c.setAttribute('fill','#aa0010');
+      svg.appendChild(c);
+    }
+    const center=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    center.setAttribute('cx','60');center.setAttribute('cy','60');
+    center.setAttribute('r','11');center.setAttribute('fill','#cc0015');
+    svg.appendChild(center);
+    rc.appendChild(svg);
+    setTimeout(()=>svg.remove(),1500);
+
+    /* burst drops on canvas */
+    for(let i=0;i<18;i++){
+      const a=Math.random()*Math.PI*2;
+      const spd=3+Math.random()*5;
+      drps.push({
+        x:x+(Math.random()*50-25),
+        y:y+(Math.random()*20-10),
+        vy:spd*Math.abs(Math.sin(a))+1,
+        r:1.5+Math.random()*4,
+        a:.9,
+        wobble:a,
+        wx:Math.cos(a)*.3
+      });
+    }
+  });
+
+  /* ── COUNTER ── */
+  function cu(id,target,sfx){
+    let c=0;
+    const el=document.getElementById(id);
+    const step=Math.ceil(target/70);
+    const ti=setInterval(()=>{
+      c=Math.min(c+step,target);
+      el.textContent=c.toLocaleString()+(sfx||'');
+      if(c>=target)clearInterval(ti);
+    },18);
+  }
+
+  /* ── SCROLL REVEAL ── */
+  const revEls=document.querySelectorAll('.reveal');
+  const obs=new IntersectionObserver((entries)=>{
+    entries.forEach(en=>{
+      if(en.isIntersecting){
+        en.target.classList.add('visible');
+        /* trigger counters when stats in view */
+      }
+    });
+  },{threshold:.15});
+  revEls.forEach(el=>obs.observe(el));
+
+  /* start counters after short delay */
+  setTimeout(()=>{
+    cu('s1',2400,'+');
+    cu('s2',1800,'+');
+    cu('s3',560,'+');
+    cu('s4',3100,'+');
+  },400);
+
+  /* ── BLOOD TYPE HOVER SOUND FEEL (visual pulse) ── */
+  document.querySelectorAll('.bb').forEach(bb=>{
+    bb.addEventListener('mouseenter',()=>{
+      for(let i=0;i<2;i++){
+        const ring=document.createElement('div');
+        ring.style.cssText=`position:absolute;inset:-4px;border-radius:50%;border:2px solid rgba(200,0,20,.6);animation:pr .7s ease-out ${i*.2}s forwards;pointer-events:none`;
+        bb.appendChild(ring);
+        setTimeout(()=>ring.remove(),900);
+      }
+    });
+  });
+
+})();
+</script>
+</body>
+</html>

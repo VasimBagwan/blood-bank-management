@@ -1,0 +1,215 @@
+{% extends 'donor/donorbase.html' %}
+{% block content %}
+{% load widget_tweaks %}
+{% load static %}
+
+<style>
+  .page-wrap{padding:2rem 0}
+
+  .section-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:1.2rem;
+    flex-wrap:wrap;
+    gap:.8rem;
+  }
+  .section-head h2{
+    font-size:1.1rem;
+    font-weight:700;
+    color:#fff;
+    display:flex;
+    align-items:center;
+    gap:.6rem;
+  }
+  .section-head h2 i{color:#cc0015;font-size:1rem}
+  .count-badge{
+    background:rgba(200,0,20,.15);
+    border:1px solid rgba(200,0,20,.3);
+    border-radius:20px;
+    padding:.25rem .8rem;
+    font-size:.7rem;
+    color:#ff6677;
+    font-weight:600;
+  }
+
+  .table-card{
+    background:rgba(18,0,0,0.93);
+    border:1px solid rgba(200,0,20,0.2);
+    border-radius:14px;
+    overflow:hidden;
+    box-shadow:0 8px 32px rgba(0,0,0,0.35);
+  }
+
+  .tbl{width:100%;border-collapse:collapse}
+  .tbl thead tr{background:rgba(200,0,20,.12)}
+  .tbl thead th{
+    padding:.85rem 1rem;
+    font-size:.65rem;
+    text-transform:uppercase;
+    letter-spacing:.12em;
+    color:rgba(255,255,255,.45);
+    font-weight:700;
+    white-space:nowrap;
+    border-bottom:1px solid rgba(200,0,20,.15);
+  }
+  .tbl tbody tr{
+    border-bottom:1px solid rgba(200,0,20,.07);
+    transition:background .18s;
+  }
+  .tbl tbody tr:last-child{border-bottom:none}
+  .tbl tbody tr:hover{background:rgba(200,0,20,.06)}
+  .tbl tbody td{
+    padding:.85rem 1rem;
+    font-size:.83rem;
+    color:rgba(255,255,255,.7);
+    vertical-align:middle;
+  }
+
+  .blood-pill{
+    display:inline-flex;
+    align-items:center;
+    gap:.3rem;
+    background:rgba(200,0,20,.12);
+    border:1px solid rgba(200,0,20,.25);
+    border-radius:20px;
+    padding:.22rem .7rem;
+    font-size:.75rem;
+    font-weight:700;
+    color:#ff6677;
+  }
+  .blood-pill i{font-size:.65rem}
+
+  /* status badges */
+  .badge{
+    display:inline-flex;
+    align-items:center;
+    gap:.3rem;
+    border-radius:20px;
+    padding:.28rem .75rem;
+    font-size:.7rem;
+    font-weight:700;
+    letter-spacing:.04em;
+  }
+  .badge-approved{
+    background:rgba(0,180,80,.1);
+    border:1px solid rgba(0,180,80,.28);
+    color:#44ff88;
+  }
+  .badge-rejected{
+    background:rgba(200,0,20,.12);
+    border:1px solid rgba(200,0,20,.3);
+    color:#ff6677;
+  }
+  .badge-pending{
+    background:rgba(200,130,0,.1);
+    border:1px solid rgba(200,130,0,.28);
+    color:#ffaa44;
+  }
+
+  .date-cell{
+    font-size:.75rem;
+    color:rgba(255,255,255,.35);
+    white-space:nowrap;
+  }
+
+  .empty-state{
+    text-align:center;
+    padding:3rem 1rem;
+    color:rgba(255,255,255,.25);
+  }
+  .empty-state i{
+    font-size:2.5rem;
+    color:rgba(200,0,20,.25);
+    display:block;
+    margin-bottom:.8rem;
+  }
+  .empty-state p{font-size:.85rem}
+
+  .unit-cell{
+    font-weight:600;
+    color:rgba(255,200,200,.7);
+    font-size:.82rem;
+  }
+
+  @media(max-width:700px){
+    .tbl thead th:nth-child(2),
+    .tbl tbody td:nth-child(2){display:none}
+    .tbl thead th:nth-child(3),
+    .tbl tbody td:nth-child(3){display:none}
+  }
+</style>
+
+<div class="page-wrap">
+
+  <div class="section-head">
+    <h2>
+      <i class="fas fa-history"></i>
+      My Blood Requests
+    </h2>
+    <span class="count-badge">
+      {% if blood_request %}{{ blood_request|length }} record{% if blood_request|length != 1 %}s{% endif %}{% else %}0 records{% endif %}
+    </span>
+  </div>
+
+  <div class="table-card">
+    <table class="tbl">
+      <thead>
+        <tr>
+          <th>Patient Name</th>
+          <th>Age</th>
+          <th>Reason</th>
+          <th>Blood Group</th>
+          <th>Unit (ml)</th>
+          <th>Date</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for t in blood_request %}
+        <tr>
+          <td>
+            <span style="color:#fff;font-weight:600">{{ t.patient_name }}</span>
+          </td>
+          <td>{{ t.patient_age }}</td>
+          <td>{{ t.reason }}</td>
+          <td>
+            <span class="blood-pill">
+              <i class="fas fa-tint"></i>{{ t.bloodgroup }}
+            </span>
+          </td>
+          <td class="unit-cell">{{ t.unit }} ml</td>
+          <td class="date-cell">{{ t.date }}</td>
+          <td>
+            {% if t.status == 'Approved' %}
+            <span class="badge badge-approved">
+              <i class="fas fa-check-circle"></i> Approved
+            </span>
+            {% elif t.status == 'Rejected' %}
+            <span class="badge badge-rejected">
+              <i class="fas fa-times-circle"></i> Rejected
+            </span>
+            {% else %}
+            <span class="badge badge-pending">
+              <i class="fas fa-clock"></i> Pending
+            </span>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7">
+            <div class="empty-state">
+              <i class="fas fa-tint-slash"></i>
+              <p>No blood requests found.</p>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+{% endblock content %}
